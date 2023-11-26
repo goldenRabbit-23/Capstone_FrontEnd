@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/login-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <h2>Login</h2>
+      <input type="email" id="email" placeholder="이메일" class="in" required />
+      <input
+        type="password"
+        id="password"
+        placeholder="비밀번호"
+        class="in"
+        required
+      />
+      <input type="submit" id="btn" onclick="login()" value="로그인" /><br />
+      <a href="register.html">Register</a>
+    </div>
+
+    <script>
+      function login() {
+        let email = document.getElementById("email").value;
+        let password = document.getElementById("password").value;
+
+        let object = {
+          email,
+          password,
+        };
+
+        axios
+          .post("/api/Accounts/auth/", object)
+          .then((response) => {
+            if (response.status === 200) {
+              console.log(response);
+              alert(`${response.data.user.nickname}님 환영합니다!`);
+              location.href = "user_main.html";
+            }
+          })
+          .catch(() => {
+            alert("로그인에 실패하였습니다.");
+          });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/user-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User: Check Rent List</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <h1>대여물품 확인</h1>
+    <hr />
+    <div class="left-user-menu">
+      <ul class="left-user-menu-list">
+        <li id="menu-list" onclick="location.href='user_main.html'">
+          마이페이지
+        </li>
+        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">
+          대여물품 확인
+        </li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">
+          회원정보 수정
+        </li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">
+          전체 기자재
+        </li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">
+          즐겨찾기
+        </li>
+        <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
+        <li id="logout-btn" onclick="logout()">로그아웃</li>
+      </ul>
+    </div>
+    <div class="main-screen">
+      <table>
+        <caption>
+          대여물품
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">품명</th>
+            <th scope="col">품번</th>
+            <th scope="col">대여 일자</th>
+            <th scope="col">반납 기한</th>
+            <th scope="col">수량</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">마이크</th>
+            <td>MK-99</td>
+            <td>2023.09.15.</td>
+            <td>2023.11.01.</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <th scope="row">스피커</th>
+            <td>Britz</td>
+            <td>2023.09.18.</td>
+            <td>2023.11.04.</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <th scope="row">앰프</th>
+            <td>Amp</td>
+            <td>2023.09.25.</td>
+            <td>2023.11.11.</td>
+            <td>1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      document.body.onload = () => {
+        axios
+          .get("/api/Accounts/auth/", {
+            withCredentials: true,
+          })
+          .catch(() => {
+            alert("로그인되어있지 않습니다. 로그인 해주세요.");
+            location.href = "login.html";
+          });
+      };
+
+      function logout() {
+        let user_id;
+        if (confirm("정말 로그아웃하시겠습니까?")) {
+          axios
+            .get("/api/Accounts/auth/", {
+              withCredentials: true,
+            })
+            .then((response) => {
+              user_id = response.data.user.id;
+            });
+          axios.delete("/api/Accounts/auth/", user_id).then(() => {
+            alert("로그아웃되었습니다.");
+            location.href = "login.html";
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
