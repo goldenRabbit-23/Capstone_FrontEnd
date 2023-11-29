@@ -10,52 +10,37 @@
   <body>
     <div>
       <h2>Register</h2>
-      <input
-        type="text"
-        id="nickname"
-        placeholder="닉네임"
-        class="in"
-        required
-      />
+      <input type="text" id="nickname" placeholder="닉네임" class="in" required />
       <input type="email" id="email" placeholder="이메일" class="in" required />
-      <input
-        type="password"
-        id="password"
-        placeholder="비밀번호"
-        class="in"
-        required
-      />
-      <input
-        type="submit"
-        id="btn"
-        onclick="register()"
-        value="회원가입"
-      /><br />
+      <input type="password" id="password" placeholder="비밀번호" class="in" required />
+      <input type="submit" id="btn" onclick="register()" value="회원가입" /><br />
       <a href="login.html">Login</a>
     </div>
 
     <script>
       function register() {
-        let nickname = document.getElementById("nickname").value;
-        let email = document.getElementById("email").value;
-        let password = document.getElementById("password").value;
+        let nickname = document.getElementById('nickname').value;
+        let email = document.getElementById('email').value;
+        let password = document.getElementById('password').value;
 
         let object = {
           nickname,
           email,
-          password,
+          password
         };
 
         axios
-          .post("/api/Accounts/signin/", object)
+          .post('/api/Accounts/signin/', object)
           .then((response) => {
             if (response.status === 200) {
-              alert("회원정보 입력으로 넘어갑니다.");
+              alert('회원정보 입력으로 넘어갑니다.');
               location.href = `register_info.html?${response.data.user.id}`;
             }
           })
-          .catch(() => {
-            alert("회원가입에 실패하였습니다.");
+          .catch((error) => {
+            if (error.response.status === 503) {
+              alert('회원가입에 실패하였습니다.');
+            }
           });
       }
     </script>

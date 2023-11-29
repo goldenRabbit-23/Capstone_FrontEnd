@@ -11,46 +11,39 @@
     <div>
       <h2>Register Info</h2>
       <input type="text" id="name" placeholder="이름" class="in" required />
-      <input
-        type="text"
-        id="phone_number"
-        placeholder="전화번호"
-        class="in"
-        required
-      />
+      <input type="text" id="phone_number" placeholder="전화번호" class="in" required />
       <input type="text" id="address" placeholder="주소" class="in" required />
-      <input
-        type="submit"
-        id="btn"
-        onclick="register()"
-        value="회원정보 입력"
-      /><br />
+      <input type="submit" id="btn" onclick="register()" value="회원정보 입력" /><br />
       <a href="login.html">Login</a>
     </div>
 
     <script>
       function register() {
-        let name = document.getElementById("name").value;
-        let phone_number = document.getElementById("phone_number").value;
-        let address = document.getElementById("address").value;
+        let name = document.getElementById('name').value;
+        let phone_number = document.getElementById('phone_number').value;
+        let address = document.getElementById('address').value;
 
         let object = {
           name,
           phone_number,
-          address,
+          address
         };
 
-        let user_id = location.href.split("?")[1];
+        let user_id = location.href.split('?')[1];
         axios
           .post(`/api/Accounts/info/${user_id}/`, object)
           .then((response) => {
             if (response.status === 201) {
-              alert("회원정보 입력이 완료되었습니다.");
-              location.href = "login.html";
+              alert('회원정보 입력이 완료되었습니다.');
+              location.href = 'login.html';
             }
           })
-          .catch(() => {
-            alert("회원가입에 실패하였습니다.");
+          .catch((error) => {
+            if (error.response.status === 503) {
+              alert(error.response.data.message);
+            } else {
+              alert('회원가입에 실패하였습니다.');
+            }
           });
       }
     </script>

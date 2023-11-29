@@ -12,22 +12,12 @@
     <hr />
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
-        <li id="menu-list" onclick="location.href='user_main.html'">
-          마이페이지
-        </li>
-        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">
-          대여물품 확인
-        </li>
-        <li id="menu-list" onclick="location.href='user_modify_info.html'">
-          회원정보 수정
-        </li>
+        <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
+        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
         <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
-        <li id="menu-list" onclick="location.href='user_item_list.html'">
-          전체 기자재
-        </li>
-        <li id="menu-list" onclick="location.href='user_favorites.html'">
-          즐겨찾기
-        </li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
         <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
         <li id="logout-btn" onclick="logout()">로그아웃</li>
       </ul>
@@ -83,31 +73,50 @@
     </div>
 
     <script>
-      document.body.onload = () => {
+      window.onload = () => {
         axios
-          .get("/api/Accounts/auth/", {
-            withCredentials: true,
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
           })
-          .catch(() => {
-            alert("로그인되어있지 않습니다. 로그인 해주세요.");
-            location.href = "login.html";
+          .catch((error) => {
+            if (error.response.status === 401) {
+              if (window.localStorage.getItem('access') === null) {
+                alert('로그인되어있지 않습니다. 로그인 해주세요.');
+                location.href = 'login.html';
+              } else {
+                refreshToken();
+                history.go(0);
+              }
+            }
           });
       };
 
-      function logout() {
-        let user_id;
-        if (confirm("정말 로그아웃하시겠습니까?")) {
-          axios
-            .get("/api/Accounts/auth/", {
-              withCredentials: true,
-            })
-            .then((response) => {
-              user_id = response.data.user.id;
-            });
-          axios.delete("/api/Accounts/auth/", user_id).then(() => {
-            alert("로그아웃되었습니다.");
-            location.href = "login.html";
+      function refreshToken() {
+        axios
+          .post('/api/Accounts/auth/refresh/', {
+            refresh: window.localStorage.getItem('refresh')
+          })
+          .then((response) => {
+            window.localStorage.setItem('access', response.data.access);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              alert('다시 로그인해주세요.');
+              window.localStorage.removeItem('access');
+              window.localStorage.removeItem('refresh');
+              location.href = 'login.html';
+            }
           });
+      }
+
+      function logout() {
+        if (confirm('정말 로그아웃하시겠습니까?')) {
+          alert('로그아웃되었습니다.');
+          window.localStorage.removeItem('access');
+          window.localStorage.removeItem('refresh');
+          location.href = 'login.html';
         }
       }
     </script>
