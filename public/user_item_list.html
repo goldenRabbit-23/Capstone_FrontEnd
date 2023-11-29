@@ -132,7 +132,7 @@
           newCell2.innerHTML = list[i].type;
           newCell3.innerHTML = list[i].price;
           newCell4.innerHTML = list[i].current_stock;
-          newCell5.innerHTML = `<a id='itemSelection' href='view_selected_item.html?${newCell0.innerHTML}'>보기</a>`;
+          newCell5.innerHTML = `<a id='itemSelection' href='view_selected_item.html?${i}+${newCell0.innerHTML}'>보기</a>`;
         }
       }
     </script>

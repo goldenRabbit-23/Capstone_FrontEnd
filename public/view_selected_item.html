@@ -29,15 +29,48 @@
         </caption>
         <thead>
           <tr>
-            <th scope="col">모델명</th>
-            <th scope="col">상품명</th>
-            <th scope="col">기종</th>
-            <th scope="col">가격</th>
-            <th scope="col">남은 수량</th>
-            <th scope="col">상세 보기</th>
+            <th scope="row">ID</th>
+            <th id="0"></th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+          <tr>
+            <th scope="row">모델명</th>
+            <td id="1"></td>
+          </tr>
+          <tr>
+            <th scope="row">상품명</th>
+            <td id="2"></td>
+          </tr>
+          <tr>
+            <th scope="row">기종</th>
+            <td id="3"></td>
+          </tr>
+          <tr>
+            <th scope="row">가격</th>
+            <td id="4"></td>
+          </tr>
+          <tr>
+            <th scope="row">저장소</th>
+            <td id="5"></td>
+          </tr>
+          <tr>
+            <th scope="row">대여 수</th>
+            <td id="6"></td>
+          </tr>
+          <tr>
+            <th scope="row">총 수량</th>
+            <td id="7"></td>
+          </tr>
+          <tr>
+            <th scope="row">현재 수량</th>
+            <td id="8"></td>
+          </tr>
+          <tr>
+            <th scope="row">제조사</th>
+            <td id="9"></td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
@@ -60,6 +93,8 @@
               }
             }
           });
+
+        getItemInfo();
       };
 
       function refreshToken() {
@@ -87,6 +122,48 @@
           window.localStorage.removeItem('refresh');
           location.href = 'login.html';
         }
+      }
+
+      function getItemInfo() {
+        let part = location.href.split('?')[1];
+        let id = part.split('+')[0];
+        let model_name = part.split('+')[1];
+        axios
+          .get(`/api/equip/inventory/${model_name}/`, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            loadItemInfo(id, response.data);
+          })
+          .catch(() => {
+            alert('해당 기자재의 정보가 존재하지 않습니다.');
+          });
+      }
+
+      function loadItemInfo(id, list) {
+        let row0 = document.getElementById('0');
+        let row1 = document.getElementById('1');
+        let row2 = document.getElementById('2');
+        let row3 = document.getElementById('3');
+        let row4 = document.getElementById('4');
+        let row5 = document.getElementById('5');
+        let row6 = document.getElementById('6');
+        let row7 = document.getElementById('7');
+        let row8 = document.getElementById('8');
+        let row9 = document.getElementById('9');
+
+        row0.innerHTML = id;
+        row1.innerHTML = list.model_name;
+        row2.innerHTML = list.name;
+        row3.innerHTML = list.type;
+        row4.innerHTML = list.price;
+        row5.innerHTML = list.repository;
+        row6.innerHTML = list.total_rent;
+        row7.innerHTML = list.total_stock;
+        row8.innerHTML = list.current_stock;
+        row9.innerHTML = list.manufacturer;
       }
     </script>
   </body>
