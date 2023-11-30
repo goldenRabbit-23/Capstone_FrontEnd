@@ -4,50 +4,55 @@
     <link rel="stylesheet" type="text/css" href="css/user-style.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User: Q&A</title>
+    <title>User: Write Post</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
+      #post {
+        width: 1500px;
+        min-width: 1500px;
+        max-width: 1500px;
+      }
+
       caption {
         font-size: 2.5em;
       }
 
-      #postSelection {
-        text-decoration: none;
-        color: darkgreen;
-        font-weight: 500;
+      #body {
+        text-align: left;
+        vertical-align: top;
+        height: 30vh;
       }
 
-      th {
-        padding-left: 0;
-        padding-right: 0;
+      tr:nth-child(even) td {
+        background-color: rgb(250, 250, 250);
       }
 
-      #buttonDiv {
-        width: 1500px;
-        text-align: right;
+      tr:nth-child(odd) td {
+        background-color: rgb(250, 250, 250);
       }
 
-      #myPostBtn {
-        width: 100px;
-        height: 40px;
-        font-size: 20px;
-        background-color: #008000;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
+      #titleBox {
+        width: 100%;
+        font-size: 15px;
+        color: black;
+        border: 1px solid black;
+        padding: 5px;
+        outline: none;
       }
 
-      #myPostBtn:hover {
-        background-color: #50c878;
-      }
-
-      #myPostBtn:active {
-        background-color: #90ee90;
+      #bodyBox {
+        width: 100%;
+        height: 500px;
+        font-size: 15px;
+        resize: none;
+        color: black;
+        border: 1px solid black;
+        padding: 5px;
+        outline: none;
       }
 
       #writeBtn {
+        margin-left: 1430px;
         width: 70px;
         height: 40px;
         font-size: 20px;
@@ -84,26 +89,21 @@
       </ul>
     </div>
     <div class="main-screen">
-      <table id="qaTable">
+      <table id="post">
         <caption>
-          질문 목록
+          질문글 등록
         </caption>
-        <thead>
-          <tr>
-            <th id="title" width="700px">제목</th>
-            <th id="creator" width="200px">작성자</th>
-            <th id="createdDate" width="400px">작성일</th>
-            <th id="hitCount" width="100px">조회수</th>
-            <th id="viewPost" width="100px">보기</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
+        <tr>
+          <th width="10%">제목</th>
+          <td><input id="titleBox" /></td>
+        </tr>
+        <tr>
+          <th>본문</th>
+          <td><textarea id="bodyBox"></textarea></td>
+        </tr>
       </table>
       <br />
-      <div id="buttonDiv">
-        <button id="myPostBtn" onclick="location.href='view_my_post.html'">내글 보기</button>
-        <button id="writeBtn" onclick="location.href='write_post.html'">등록</button>
-      </div>
+      <button id="writeBtn" type="button" onclick="writePost()">등록</button>
     </div>
 
     <script>
@@ -124,8 +124,6 @@
               }
             }
           });
-
-        getBoard();
       };
 
       function refreshToken() {
@@ -155,42 +153,35 @@
         }
       }
 
-      function getBoard() {
+      function writePost() {
+        let titleBox = document.getElementById('titleBox');
+        let bodyBox = document.getElementById('bodyBox');
+
+        if (titleBox.value === '' || bodyBox.value === '') {
+          alert('제목과 본문은 공백일 수 없습니다.');
+          return;
+        }
+
         axios
-          .get('/api/board/question/', {
-            headers: {
-              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+          .post(
+            '/api/board/question/',
+            {
+              title: titleBox.value,
+              field: bodyBox.value
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${window.localStorage.getItem('access')}`
+              }
             }
-          })
+          )
           .then((response) => {
-            drawBoard(response.data);
+            alert('질문글 등록이 완료되었습니다.');
+            location.href = 'user_qa.html';
           })
           .catch(() => {
-            alert('게시물이 없습니다.');
+            alert('질문글 등록에 실패하였습니다.');
           });
-      }
-
-      async function drawBoard(list) {
-        let qaTable = document.getElementById('qaTable');
-
-        for (let i = 0; i < list.length; i++) {
-          let newRow = qaTable.insertRow();
-
-          let newCell0 = newRow.insertCell(0);
-          let newCell1 = newRow.insertCell(1);
-          let newCell2 = newRow.insertCell(2);
-          let newCell3 = newRow.insertCell(3);
-          let newCell4 = newRow.insertCell(4);
-
-          newCell0.innerHTML = list[i].title;
-          let response = await axios.get(`/api/Accounts/auth/${list[i].user_id}/`);
-          newCell1.innerHTML = response.data.nickname;
-          let date = list[i].written_date.split('T')[0];
-          let time = list[i].written_date.split('T')[1].split('.')[0];
-          newCell2.innerHTML = date + ' ' + time;
-          newCell3.innerHTML = list[i].hit_count;
-          newCell4.innerHTML = `<a id='postSelection' href='view_selected_post.html?${list[i].id}'>보기</a>`;
-        }
       }
     </script>
   </body>

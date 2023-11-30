@@ -27,8 +27,8 @@
         text-align: right;
       }
 
-      #myPostBtn {
-        width: 100px;
+      #allPostBtn {
+        width: 120px;
         height: 40px;
         font-size: 20px;
         background-color: #008000;
@@ -39,11 +39,11 @@
         cursor: pointer;
       }
 
-      #myPostBtn:hover {
+      #allPostBtn:hover {
         background-color: #50c878;
       }
 
-      #myPostBtn:active {
+      #allPostBtn:active {
         background-color: #90ee90;
       }
 
@@ -86,7 +86,7 @@
     <div class="main-screen">
       <table id="qaTable">
         <caption>
-          질문 목록
+          내 질문 목록
         </caption>
         <thead>
           <tr>
@@ -101,7 +101,7 @@
       </table>
       <br />
       <div id="buttonDiv">
-        <button id="myPostBtn" onclick="location.href='view_my_post.html'">내글 보기</button>
+        <button id="allPostBtn" onclick="location.href='user_qa.html'">전체글 보기</button>
         <button id="writeBtn" onclick="location.href='write_post.html'">등록</button>
       </div>
     </div>
@@ -157,7 +157,7 @@
 
       function getBoard() {
         axios
-          .get('/api/board/question/', {
+          .get('/api/board/mine/', {
             headers: {
               Authorization: `Bearer ${window.localStorage.getItem('access')}`
             }

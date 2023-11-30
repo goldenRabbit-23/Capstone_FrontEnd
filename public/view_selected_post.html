@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/user-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User: Selected Post</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      #post {
+        width: 1500px;
+        min-width: 1500px;
+        max-width: 1500px;
+      }
+
+      caption {
+        font-size: 2.5em;
+      }
+
+      #body {
+        text-align: left;
+        vertical-align: top;
+        height: 30vh;
+        font-size: 1.3em;
+      }
+
+      tr:nth-child(even) td {
+        background-color: rgb(250, 250, 250);
+      }
+
+      tr:nth-child(odd) td {
+        background-color: rgb(250, 250, 250);
+      }
+
+      textarea {
+        width: 1100px;
+        height: 100px;
+        font-size: 15px;
+        resize: none;
+        color: black;
+        border: 1px solid black;
+        padding: 5px;
+        outline: none;
+      }
+
+      #answerBtn {
+        text-align: center;
+        width: 100px;
+        height: 100px;
+        border: 2px solid black;
+        font-size: 2em;
+        border-radius: 10px;
+        background-color: rgb(255, 255, 0);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      #answerBtn:hover {
+        background-color: rgba(255, 255, 0, 0.7);
+      }
+
+      #notAnswered {
+        color: red;
+        font-size: 1.3em;
+        font-weight: 600;
+      }
+
+      #answered {
+        color: blue;
+        font-size: 1.3em;
+        font-weight: 600;
+      }
+
+      #buttonsDiv {
+        width: 1500px;
+        text-align: right;
+        margin-top: 10px;
+      }
+
+      #goBackBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: rgb(50, 50, 255);
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #goBackBtn:hover {
+        background-color: rgb(100, 100, 255);
+      }
+
+      #goBackBtn:active {
+        background-color: rgb(150, 150, 255);
+      }
+
+      #modifyBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #4c381e;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #modifyBtn:hover {
+        background-color: #6e522c;
+      }
+
+      #modifyBtn:active {
+        background-color: #916c39;
+      }
+
+      #removeBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #b22222;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #removeBtn:hover {
+        background-color: #ff0000;
+      }
+
+      #removeBtn:active {
+        background-color: #ff4040;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Q&A</h1>
+    <hr />
+    <div class="left-user-menu">
+      <ul class="left-user-menu-list">
+        <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
+        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
+        <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
+        <li id="logout-btn" onclick="logout()">로그아웃</li>
+      </ul>
+    </div>
+    <div class="main-screen">
+      <table id="post">
+        <caption>
+          질문글 정보
+        </caption>
+        <colgroup>
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+          <col width="5%" />
+        </colgroup>
+
+        <tr>
+          <th colspan="3">제목</th>
+          <td colspan="12" id="title"></td>
+          <th colspan="3">조회수</th>
+          <td colspan="2" id="hitCount"></td>
+        </tr>
+        <tr>
+          <th colspan="3">작성자</th>
+          <td colspan="3" id="creator"></td>
+          <th colspan="3">작성일</th>
+          <td colspan="4" id="createdDate"></td>
+          <th colspan="3">수정일</th>
+          <td colspan="4" id="updatedDate"></td>
+        </tr>
+        <tr>
+          <th colspan="3">내용</th>
+          <td colspan="17" id="body"></td>
+        </tr>
+      </table>
+      <div id="buttonsDiv"></div>
+      <br /><br />
+      <div id="hasAnswer"></div>
+      <table id="answerTable">
+        <tr>
+          <th width="150px">답변</th>
+          <td><textarea id="answer"></textarea></td>
+          <td><button id="answerBtn" type="button" onclick="reply()">등록</button></td>
+        </tr>
+      </table>
+    </div>
+
+    <script>
+      window.onload = () => {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              if (window.localStorage.getItem('access') === null) {
+                alert('로그인되어있지 않습니다. 로그인 해주세요.');
+                location.href = 'login.html';
+              } else {
+                refreshToken();
+              }
+            }
+          });
+
+        getPostInfo();
+      };
+
+      function refreshToken() {
+        axios
+          .post('/api/Accounts/auth/refresh/', {
+            refresh: window.localStorage.getItem('refresh')
+          })
+          .then((response) => {
+            window.localStorage.setItem('access', response.data.access);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              alert('다시 로그인해주세요.');
+              window.localStorage.removeItem('access');
+              window.localStorage.removeItem('refresh');
+              location.href = 'login.html';
+            }
+          });
+      }
+
+      function logout() {
+        if (confirm('정말 로그아웃하시겠습니까?')) {
+          alert('로그아웃되었습니다.');
+          window.localStorage.removeItem('access');
+          window.localStorage.removeItem('refresh');
+          location.href = 'login.html';
+        }
+      }
+
+      function getPostInfo() {
+        let post_id = location.href.split('?')[1];
+        axios
+          .get(`/api/board/question/${post_id}/`, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawPost(response.data);
+          });
+      }
+
+      async function drawPost(list) {
+        // post
+        let title = document.getElementById('title');
+        let hitCount = document.getElementById('hitCount');
+        let creator = document.getElementById('creator');
+        let createdDate = document.getElementById('createdDate');
+        let updatedDate = document.getElementById('updatedDate');
+        let body = document.getElementById('body');
+
+        title.innerHTML = list.title;
+        hitCount.innerHTML = list.hit_count;
+        let response = await axios.get(`/api/Accounts/auth/${list.user_id}/`);
+        creator.innerHTML = response.data.nickname;
+        let created_date = list.written_date.split('T')[0];
+        let created_time = list.written_date.split('T')[1].split('.')[0];
+        createdDate.innerHTML = created_date + ' ' + created_time;
+        let updated_date = list.updated_at.split('T')[0];
+        let updated_time = list.updated_at.split('T')[1].split('.')[0];
+        updatedDate.innerHTML = updated_date + ' ' + updated_time;
+        body.innerHTML = list.field;
+
+        // answer
+        let hasAnswer = document.getElementById('hasAnswer');
+        let answerBox = document.getElementById('answer');
+
+        if (list.answer === null) {
+          hasAnswer.innerHTML = `<span id='notAnswered'>아직 답변이 등록되지 않았습니다.</span>`;
+        } else {
+          hasAnswer.innerHTML = `<span id='answered'>답변이 등록되었습니다.</span>`;
+          answerBox.value = list.answer;
+        }
+
+        // show buttons
+        let checkLoginResp = await axios.get('/api/Accounts/auth/', {
+          headers: {
+            Authorization: `Bearer ${window.localStorage.getItem('access')}`
+          }
+        });
+        let loginUserID = checkLoginResp.data.user.id;
+
+        let buttonsDiv = document.getElementById('buttonsDiv');
+        if (loginUserID === list.user_id) {
+          buttonsDiv.innerHTML = `<button id="goBackBtn" onclick="location.href='user_qa.html'">목록</button>
+        <button id="modifyBtn" onclick="modify()">수정</button>
+        <button id="removeBtn" onclick="remove()">삭제</button>`;
+        } else {
+          buttonsDiv.innerHTML = `<button id="goBackBtn" onclick="location.href='user_qa.html'">목록</button>`;
+        }
+      }
+
+      function reply() {
+        let post_id = location.href.split('?')[1];
+        let answer = document.getElementById('answer');
+
+        if (answer.value === '') {
+          alert('답변은 공백일 수 없습니다.');
+          return;
+        }
+
+        axios
+          .put(
+            `/api/board/answer/${post_id}/`,
+            {
+              answer: answer.value
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${window.localStorage.getItem('access')}`
+              }
+            }
+          )
+          .then(() => {
+            alert('답변이 등록되었습니다.');
+          })
+          .catch(() => {
+            alert('답변 등록에 실패하였습니다.');
+          });
+      }
+
+      function modify() {
+        let post_id = location.href.split('?')[1];
+        location.href = `modify_post.html?${post_id}`;
+      }
+
+      function remove() {
+        if (!confirm('정말 삭제하시겠습니까?')) {
+          return;
+        }
+
+        let post_id = location.href.split('?')[1];
+
+        axios
+          .delete(`/api/board/question/${post_id}/`, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then(() => {
+            alert('삭제되었습니다.');
+            location.href = 'user_qa.html';
+          })
+          .catch(() => {
+            alert('삭제에 실패하였습니다.');
+          });
+      }
+    </script>
+  </body>
+</html>
