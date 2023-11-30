@@ -6,6 +6,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User: Selected Item</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      caption {
+        font-size: 2.5em;
+      }
+
+      th {
+        width: 200px;
+      }
+
+      td {
+        width: 300px;
+      }
+
+      #buttonsDiv {
+        width: 585px;
+        text-align: right;
+        margin-top: 10px;
+      }
+
+      #goBackBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: rgb(50, 50, 255);
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #goBackBtn:hover {
+        background-color: rgb(100, 100, 255);
+      }
+
+      #goBackBtn:active {
+        background-color: rgb(150, 150, 255);
+      }
+
+      #modifyBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #4c381e;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #modifyBtn:hover {
+        background-color: #6e522c;
+      }
+
+      #modifyBtn:active {
+        background-color: #916c39;
+      }
+
+      #removeBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #b22222;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #removeBtn:hover {
+        background-color: #ff0000;
+      }
+
+      #removeBtn:active {
+        background-color: #ff4040;
+      }
+    </style>
   </head>
   <body>
     <h1>기자재 상세정보</h1>
@@ -27,12 +106,6 @@
         <caption>
           기자재 상세정보
         </caption>
-        <thead>
-          <tr>
-            <th scope="row">ID</th>
-            <th id="0"></th>
-          </tr>
-        </thead>
         <tbody>
           <tr>
             <th scope="row">모델명</th>
@@ -51,7 +124,7 @@
             <td id="4"></td>
           </tr>
           <tr>
-            <th scope="row">저장소</th>
+            <th scope="row">보관소</th>
             <td id="5"></td>
           </tr>
           <tr>
@@ -72,6 +145,7 @@
           </tr>
         </tbody>
       </table>
+      <div id="buttonsDiv"></div>
     </div>
 
     <script>
@@ -124,9 +198,7 @@
       }
 
       function getItemInfo() {
-        let part = location.href.split('?')[1];
-        let id = part.split('+')[0];
-        let model_name = part.split('+')[1];
+        let model_name = location.href.split('?')[1];
         axios
           .get(`/api/equip/inventory/${model_name}/`, {
             headers: {
@@ -134,15 +206,15 @@
             }
           })
           .then((response) => {
-            loadItemInfo(id, response.data);
+            loadItemInfo(response.data);
           })
           .catch(() => {
             alert('해당 기자재의 정보가 존재하지 않습니다.');
           });
       }
 
-      function loadItemInfo(id, list) {
-        let row0 = document.getElementById('0');
+      function loadItemInfo(list) {
+        // item info
         let row1 = document.getElementById('1');
         let row2 = document.getElementById('2');
         let row3 = document.getElementById('3');
@@ -153,7 +225,6 @@
         let row8 = document.getElementById('8');
         let row9 = document.getElementById('9');
 
-        row0.innerHTML = id;
         row1.innerHTML = list.model_name;
         row2.innerHTML = list.name;
         row3.innerHTML = list.type;
@@ -163,6 +234,52 @@
         row7.innerHTML = list.total_stock;
         row8.innerHTML = list.current_stock;
         row9.innerHTML = list.manufacturer;
+
+        // buttons
+        let buttonsDiv = document.getElementById('buttonsDiv');
+
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              buttonsDiv.innerHTML = `<button id="goBackBtn" onclick="location.href='user_item_list.html'">목록</button>
+        <button id="modifyBtn" onclick="modify()">수정</button>
+        <button id="removeBtn" onclick="remove()">삭제</button>`;
+            } else {
+              buttonsDiv.innerHTML = `<button id="goBackBtn" onclick="location.href='user_item_list.html'">목록</button>`;
+            }
+          });
+      }
+
+      function modify() {
+        let model_name = location.href.split('?')[1];
+        location.href = `modify_equipment.html?${model_name}`;
+      }
+
+      function remove() {
+        if (!confirm('정말 삭제하시겠습니까?')) {
+          return;
+        }
+
+        let model_name = location.href.split('?')[1];
+
+        axios
+          .delete(`/api/equip/inventory/${model_name}/`, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then(() => {
+            alert('삭제되었습니다.');
+            location.href = 'user_item_list.html';
+          })
+          .catch(() => {
+            alert('삭제에 실패하였습니다.');
+          });
       }
     </script>
   </body>

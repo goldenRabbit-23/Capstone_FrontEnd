@@ -43,6 +43,26 @@
         background-color: #8e44ad;
       }
 
+      #showByNameBtn {
+        width: 120px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #008000;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #showByNameBtn:hover {
+        background-color: #50c878;
+      }
+
+      #showByNameBtn:active {
+        background-color: #90ee90;
+      }
+
       #showByUpdatedBtn {
         width: 120px;
         height: 40px;
@@ -60,26 +80,6 @@
       }
 
       #showByUpdatedBtn:active {
-        background-color: #90ee90;
-      }
-
-      #showByRentBtn {
-        width: 120px;
-        height: 40px;
-        font-size: 20px;
-        background-color: #008000;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      #showByRentBtn:hover {
-        background-color: #50c878;
-      }
-
-      #showByRentBtn:active {
         background-color: #90ee90;
       }
 
@@ -137,12 +137,12 @@
         <tbody></tbody>
       </table>
       <div id="buttonDiv">
-        <button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
+        <button id="searchBtn" onclick="search()">검색</button>
+        <button id="showByNameBtn" onclick="location.href='user_item_list.html'">
+          이름순 보기
+        </button>
         <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
           최신순 보기
-        </button>
-        <button id="showByRentBtn" onclick="location.href='user_item_list_byRent.html'">
-          대여순 보기
         </button>
         <button id="addEquipBtn" onclick="location.href='add_equipment.html'">추가</button>
       </div>
@@ -199,7 +199,7 @@
 
       function loadItemList() {
         axios
-          .get('/api/equip/inventory/', {
+          .get('/api/equip/inventory/totalrent/', {
             headers: {
               Authorization: `Bearer ${window.localStorage.getItem('access')}`
             }

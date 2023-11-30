@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/user-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Equipment</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      #post {
+        width: 1500px;
+        min-width: 1500px;
+        max-width: 1500px;
+      }
+
+      caption {
+        font-size: 2.5em;
+      }
+
+      #body {
+        text-align: left;
+        vertical-align: top;
+        height: 30vh;
+      }
+
+      tr:nth-child(even) td {
+        background-color: rgb(250, 250, 250);
+      }
+
+      tr:nth-child(odd) td {
+        background-color: rgb(250, 250, 250);
+      }
+
+      #titleBox {
+        width: 100%;
+        font-size: 15px;
+        color: black;
+        border: 1px solid black;
+        padding: 5px;
+        outline: none;
+      }
+
+      #bodyBox {
+        width: 100%;
+        height: 500px;
+        font-size: 15px;
+        resize: none;
+        color: black;
+        border: 1px solid black;
+        padding: 5px;
+        outline: none;
+      }
+
+      #buttonDiv {
+        width: 1500px;
+        text-align: right;
+        margin-top: 10px;
+      }
+
+      #modifyEquipBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #4c381e;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #modifyEquipBtn:hover {
+        background-color: #6e522c;
+      }
+
+      #modifyEquipBtn:active {
+        background-color: #916c39;
+      }
+
+      input {
+        width: 100%;
+        font-size: 15px;
+        color: black;
+        border: 1px solid black;
+        padding: 5px;
+        outline: none;
+      }
+
+      [id='0'] {
+        background-color: beige;
+        color: gray;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>기자재 수정</h1>
+    <hr />
+    <div class="left-user-menu">
+      <ul class="left-user-menu-list">
+        <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
+        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
+        <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
+        <li id="logout-btn" onclick="logout()">로그아웃</li>
+      </ul>
+    </div>
+    <div class="main-screen">
+      <table id="post">
+        <caption>
+          기자재 수정
+        </caption>
+        <tr>
+          <th>모델명</th>
+          <td><input id="0" placeholder="필수" readonly /></td>
+          <th>상품명</th>
+          <td><input id="1" placeholder="필수" /></td>
+        </tr>
+        <tr>
+          <th>기종</th>
+          <td><input id="2" placeholder="필수" /></td>
+          <th>가격</th>
+          <td><input id="3" /></td>
+        </tr>
+        <tr>
+          <th>보관소</th>
+          <td><input id="4" placeholder="필수" /></td>
+          <th>총 수량</th>
+          <td><input id="5" /></td>
+        </tr>
+        <tr>
+          <th>현재 수량</th>
+          <td><input id="6" /></td>
+          <th>제조사</th>
+          <td><input id="7" /></td>
+        </tr>
+      </table>
+      <div id="buttonDiv">
+        <button id="modifyEquipBtn" type="button" onclick="modifyEquipment()">수정</button>
+      </div>
+    </div>
+
+    <script>
+      window.onload = () => {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              if (window.localStorage.getItem('access') === null) {
+                alert('로그인되어있지 않습니다. 로그인 해주세요.');
+                location.href = 'login.html';
+              } else {
+                refreshToken();
+              }
+            }
+          });
+
+        loadInfo();
+      };
+
+      function refreshToken() {
+        axios
+          .post('/api/Accounts/auth/refresh/', {
+            refresh: window.localStorage.getItem('refresh')
+          })
+          .then((response) => {
+            window.localStorage.setItem('access', response.data.access);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              alert('다시 로그인해주세요.');
+              window.localStorage.removeItem('access');
+              window.localStorage.removeItem('refresh');
+              location.href = 'login.html';
+            }
+          });
+      }
+
+      function logout() {
+        if (confirm('정말 로그아웃하시겠습니까?')) {
+          alert('로그아웃되었습니다.');
+          window.localStorage.removeItem('access');
+          window.localStorage.removeItem('refresh');
+          location.href = 'login.html';
+        }
+      }
+
+      function loadInfo() {
+        let model_name = location.href.split('?')[1];
+        let input0 = document.getElementById('0');
+        let input1 = document.getElementById('1');
+        let input2 = document.getElementById('2');
+        let input3 = document.getElementById('3');
+        let input4 = document.getElementById('4');
+        let input5 = document.getElementById('5');
+        let input6 = document.getElementById('6');
+        let input7 = document.getElementById('7');
+
+        axios
+          .get(`/api/equip/inventory/${model_name}/`, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            input0.value = response.data.model_name;
+            input1.value = response.data.name;
+            input2.value = response.data.type;
+            input3.value = response.data.price;
+            input4.value = response.data.repository;
+            input5.value = response.data.total_stock;
+            input6.value = response.data.current_stock;
+            input7.value = response.data.manufacturer;
+          });
+      }
+
+      function modifyEquipment() {
+        let input0 = document.getElementById('0');
+        let input1 = document.getElementById('1');
+        let input2 = document.getElementById('2');
+        let input3 = document.getElementById('3');
+        let input4 = document.getElementById('4');
+        let input5 = document.getElementById('5');
+        let input6 = document.getElementById('6');
+        let input7 = document.getElementById('7');
+
+        if (
+          input0.value === '' ||
+          input1.value === '' ||
+          input2.value === '' ||
+          input4.value === ''
+        ) {
+          alert('필수 부분은 공백일 수 없습니다.');
+          return;
+        }
+
+        axios
+          .put(
+            `/api/equip/inventory/${input0.value}/`,
+            {
+              model_name: input0.value,
+              name: input1.value,
+              type: input2.value,
+              price: input3.value,
+              repository: input4.value,
+              total_stock: input5.value,
+              current_stock: input6.value,
+              manufacturer: input7.value
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${window.localStorage.getItem('access')}`
+              }
+            }
+          )
+          .then(() => {
+            alert('기자재 수정이 완료되었습니다.');
+            location.href = `view_selected_item.html?${input0.value}`;
+          })
+          .catch(() => {
+            alert('기자재 수정에 실패하였습니다.');
+          });
+      }
+    </script>
+  </body>
+</html>

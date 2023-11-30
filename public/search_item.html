@@ -7,8 +7,8 @@
     <title>User: Item List</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-      caption {
-        font-size: 2.5em;
+      #itemTable {
+        margin-top: 10px;
       }
 
       #itemSelection {
@@ -23,89 +23,30 @@
         margin-top: 10px;
       }
 
-      #searchBtn {
-        width: 70px;
+      .searchBox {
+        width: 400px;
         height: 40px;
+        font-size: 1.3em;
+        padding-left: 10px;
+        padding-right: 10px;
+        border: 2px solid blue;
+        outline: none;
+        margin-top: 10px;
+      }
+
+      .searchBtn {
+        width: 60px;
+        height: 44px;
         font-size: 20px;
-        background-color: #4a235a;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
+        border: 1px solid black;
+        background-color: blue;
+        color: #ffffff;
         cursor: pointer;
-      }
-
-      #searchBtn:hover {
-        background-color: #6c3483;
-      }
-
-      #searchBtn:active {
-        background-color: #8e44ad;
-      }
-
-      #showByUpdatedBtn {
-        width: 120px;
-        height: 40px;
-        font-size: 20px;
-        background-color: #008000;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      #showByUpdatedBtn:hover {
-        background-color: #50c878;
-      }
-
-      #showByUpdatedBtn:active {
-        background-color: #90ee90;
-      }
-
-      #showByRentBtn {
-        width: 120px;
-        height: 40px;
-        font-size: 20px;
-        background-color: #008000;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      #showByRentBtn:hover {
-        background-color: #50c878;
-      }
-
-      #showByRentBtn:active {
-        background-color: #90ee90;
-      }
-
-      #addEquipBtn {
-        width: 70px;
-        height: 40px;
-        font-size: 20px;
-        background-color: rgb(50, 50, 255);
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      #addEquipBtn:hover {
-        background-color: rgb(100, 100, 255);
-      }
-
-      #addEquipBtn:active {
-        background-color: rgb(150, 150, 255);
       }
     </style>
   </head>
   <body>
-    <h1>전체 기자재</h1>
+    <h1>기자재 검색</h1>
     <hr />
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
@@ -120,10 +61,9 @@
       </ul>
     </div>
     <div class="main-screen">
+      <input class="searchBox" type="text" value="" placeholder="검색어를 입력하세요" />
+      <input class="searchBtn" type="button" value="검색" onclick="search()" />
       <table id="itemTable">
-        <caption>
-          전체 기자재
-        </caption>
         <thead>
           <tr>
             <th scope="col" width="200px">모델명</th>
@@ -136,16 +76,6 @@
         </thead>
         <tbody></tbody>
       </table>
-      <div id="buttonDiv">
-        <button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
-        <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
-          최신순 보기
-        </button>
-        <button id="showByRentBtn" onclick="location.href='user_item_list_byRent.html'">
-          대여순 보기
-        </button>
-        <button id="addEquipBtn" onclick="location.href='add_equipment.html'">추가</button>
-      </div>
     </div>
 
     <script>
@@ -166,8 +96,6 @@
               }
             }
           });
-
-        loadItemList();
       };
 
       function refreshToken() {
@@ -197,19 +125,19 @@
         }
       }
 
-      function loadItemList() {
+      function search() {
+        let searchBox = document.querySelector('.searchBox');
+
+        while (document.getElementById('itemTable').rows.length > 1) {
+          document.getElementById('itemTable').deleteRow(1);
+        }
+
         axios
-          .get('/api/equip/inventory/', {
-            headers: {
-              Authorization: `Bearer ${window.localStorage.getItem('access')}`
-            }
+          .post('/api/equip/inventory/search/', {
+            searchData: searchBox.value
           })
           .then((response) => {
-            if (response.status === 204) {
-              alert('기자재 데이터가 존재하지 않습니다.');
-            } else {
-              drawTable(response.data);
-            }
+            drawTable(response.data);
           });
       }
 

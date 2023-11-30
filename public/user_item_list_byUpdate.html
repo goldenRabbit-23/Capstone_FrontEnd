@@ -43,7 +43,7 @@
         background-color: #8e44ad;
       }
 
-      #showByUpdatedBtn {
+      #showByNameBtn {
         width: 120px;
         height: 40px;
         font-size: 20px;
@@ -55,11 +55,11 @@
         cursor: pointer;
       }
 
-      #showByUpdatedBtn:hover {
+      #showByNameBtn:hover {
         background-color: #50c878;
       }
 
-      #showByUpdatedBtn:active {
+      #showByNameBtn:active {
         background-color: #90ee90;
       }
 
@@ -137,9 +137,9 @@
         <tbody></tbody>
       </table>
       <div id="buttonDiv">
-        <button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
-        <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
-          최신순 보기
+        <button id="searchBtn" onclick="search()">검색</button>
+        <button id="showByNameBtn" onclick="location.href='user_item_list.html'">
+          이름순 보기
         </button>
         <button id="showByRentBtn" onclick="location.href='user_item_list_byRent.html'">
           대여순 보기
@@ -199,7 +199,7 @@
 
       function loadItemList() {
         axios
-          .get('/api/equip/inventory/', {
+          .get('/api/equip/inventory/updatedat/', {
             headers: {
               Authorization: `Bearer ${window.localStorage.getItem('access')}`
             }
