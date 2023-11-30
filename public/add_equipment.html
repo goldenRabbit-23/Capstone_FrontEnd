@@ -126,6 +126,10 @@
           <th>제조사</th>
           <td><input id="7" /></td>
         </tr>
+        <tr>
+          <th>이미지</th>
+          <td colspan="3"><input id="img-file" type="file" /></td>
+        </tr>
       </table>
       <br />
       <button id="addEquipBtn" type="button" onclick="addEquipment()">추가</button>
@@ -187,36 +191,38 @@
         let input5 = document.getElementById('5');
         let input6 = document.getElementById('6');
         let input7 = document.getElementById('7');
+        let imgFile = document.getElementById('img-file');
+
+        let formData = new FormData();
+
+        formData.append('model_name', input0.value);
+        formData.append('name', input1.value);
+        formData.append('type', input2.value);
+        formData.append('price', input3.value);
+        formData.append('repository', input4.value);
+        formData.append('total_stock', input5.value);
+        formData.append('current_stock', input6.value);
+        formData.append('manufacturer', input7.value);
+        formData.append('photo', imgFile.files[0]);
 
         if (
           input0.value === '' ||
           input1.value === '' ||
           input2.value === '' ||
-          input4.value === ''
+          input4.value === '' ||
+          imgFile.files[0] === undefined
         ) {
-          alert('필수 부분은 공백일 수 없습니다.');
+          alert('필수 부분과 사진은 공백일 수 없습니다.');
           return;
         }
 
         axios
-          .post(
-            '/api/equip/inventory/',
-            {
-              model_name: input0.value,
-              name: input1.value,
-              type: input2.value,
-              price: input3.value,
-              repository: input4.value,
-              total_stock: input5.value,
-              current_stock: input6.value,
-              manufacturer: input7.value
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${window.localStorage.getItem('access')}`
-              }
+          .post('/api/equip/inventory/', formData, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`,
+              'Content-Type': 'multipart/form-data'
             }
-          )
+          })
           .then(() => {
             alert('기자재 추가가 완료되었습니다.');
             location.href = 'user_item_list.html';

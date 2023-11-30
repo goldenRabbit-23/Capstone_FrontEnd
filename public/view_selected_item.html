@@ -84,6 +84,10 @@
       #removeBtn:active {
         background-color: #ff4040;
       }
+
+      img {
+        width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -107,6 +111,10 @@
           기자재 상세정보
         </caption>
         <tbody>
+          <tr>
+            <th scope="row">이미지</th>
+            <td id="0"></td>
+          </tr>
           <tr>
             <th scope="row">모델명</th>
             <td id="1"></td>
@@ -215,6 +223,7 @@
 
       function loadItemInfo(list) {
         // item info
+        let row0 = document.getElementById('0');
         let row1 = document.getElementById('1');
         let row2 = document.getElementById('2');
         let row3 = document.getElementById('3');
@@ -225,6 +234,11 @@
         let row8 = document.getElementById('8');
         let row9 = document.getElementById('9');
 
+        if (list.photo === null) {
+          row0.innerHTML = `<img src='logo.png' alt='이미지' />`;
+        } else {
+          row0.innerHTML = `<img src='/api${list.photo}' alt='이미지' />`;
+        }
         row1.innerHTML = list.model_name;
         row2.innerHTML = list.name;
         row3.innerHTML = list.type;
