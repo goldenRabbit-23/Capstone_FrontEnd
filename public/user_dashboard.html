@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/user-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User: Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      caption {
+        font-size: 2.5em;
+      }
+
+      #noInfo {
+        color: crimson;
+        font-weight: 600;
+        font-size: 1.5em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>대시보드</h1>
+    <hr />
+    <div class="left-user-menu">
+      <ul class="left-user-menu-list">
+        <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
+        <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
+        <li id="logout-btn" onclick="logout()">로그아웃</li>
+      </ul>
+    </div>
+    <div class="main-screen">
+      <table id="logTable">
+        <caption>
+          입출력 현황
+        </caption>
+        <tr>
+          <th width="100px">모델명</th>
+          <th width="50px">수량</th>
+          <th width="50px">가격</th>
+          <th width="180px">대여 신청 날짜</th>
+          <th width="180px">대여 승인 날짜</th>
+          <th width="180px">반납 기한</th>
+          <th width="180px">반납 신청 날짜</th>
+          <th width="180px">반납 승인 날짜</th>
+        </tr>
+      </table>
+      <br /><br />
+      <table id="logBookmarkTable">
+        <caption>
+          나의 즐겨찾기 입출력 현황
+        </caption>
+        <tr>
+          <th width="100px">모델명</th>
+          <th width="50px">수량</th>
+          <th width="50px">가격</th>
+          <th width="180px">대여 신청 날짜</th>
+          <th width="180px">대여 승인 날짜</th>
+          <th width="180px">반납 기한</th>
+          <th width="180px">반납 신청 날짜</th>
+          <th width="180px">반납 승인 날짜</th>
+        </tr>
+      </table>
+      <br /><br />
+      <div>
+        <table style="float: left" id="logByRentTable">
+          <caption>
+            내가 빌린 기자재 순위
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" width="50px">순위</th>
+              <th scope="col" width="200px">모델명</th>
+              <th scope="col" width="150px">대여 개수</th>
+            </tr>
+          </thead>
+        </table>
+        <table style="float: left; margin-left: 385px" id="logByRentWeeklyTable">
+          <caption>
+            지난 한 주간 빌린 기자재 순위
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col" width="50px">순위</th>
+              <th scope="col" width="200px">모델명</th>
+              <th scope="col" width="150px">대여 개수</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      window.onload = () => {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              location.href = 'admin_dashboard.html';
+            } else {
+              loadLog();
+              loadBookmarkLog();
+              loadLogByRent();
+              loadLogByRentWeekly();
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              if (window.localStorage.getItem('access') === null) {
+                alert('로그인되어있지 않습니다. 로그인 해주세요.');
+                location.href = 'login.html';
+              } else {
+                refreshToken();
+              }
+            }
+          });
+      };
+
+      function refreshToken() {
+        axios
+          .post('/api/Accounts/auth/refresh/', {
+            refresh: window.localStorage.getItem('refresh')
+          })
+          .then((response) => {
+            window.localStorage.setItem('access', response.data.access);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              alert('다시 로그인해주세요.');
+              window.localStorage.removeItem('access');
+              window.localStorage.removeItem('refresh');
+              location.href = 'login.html';
+            }
+          });
+      }
+
+      function logout() {
+        if (confirm('정말 로그아웃하시겠습니까?')) {
+          alert('로그아웃되었습니다.');
+          window.localStorage.removeItem('access');
+          window.localStorage.removeItem('refresh');
+          location.href = 'login.html';
+        }
+      }
+
+      function loadLog() {
+        axios
+          .get('/api/equip/log/')
+          .then((response) => {
+            if (response.status === 204) {
+              let logTable = document.getElementById('logTable');
+              let newRow = logTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '8');
+            } else {
+              drawLogTable(response.data);
+            }
+          })
+          .catch(() => {
+            alert('오류가 발생하였습니다.');
+          });
+      }
+
+      async function drawLogTable(data) {
+        let logTable = document.getElementById('logTable');
+        let data_count = Math.min(data.length, 20); // max. 20 latest logs
+
+        for (let i = 0; i < data_count; i++) {
+          let newRow = logTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+          let newCell3 = newRow.insertCell(3);
+          let newCell4 = newRow.insertCell(4);
+          let newCell5 = newRow.insertCell(5);
+          let newCell6 = newRow.insertCell(6);
+          let newCell7 = newRow.insertCell(7);
+
+          let logIDResp = await axios.get(`/api/equip/log/${data[i].id}/`);
+          newCell0.innerHTML = logIDResp.data.model_name;
+          newCell1.innerHTML = logIDResp.data.rent_count;
+          newCell2.innerHTML = logIDResp.data.rent_price;
+
+          if (logIDResp.data.rent_requested_date !== null) {
+            let rentRequestedDate = logIDResp.data.rent_requested_date.split('T')[0];
+            let rentRequestedTime = logIDResp.data.rent_requested_date.split('T')[1].split('+')[0];
+            newCell3.innerHTML = rentRequestedDate + ' ' + rentRequestedTime;
+          }
+
+          if (logIDResp.data.rent_accepted_date !== null) {
+            let rentAcceptedDate = logIDResp.data.rent_accepted_date.split('T')[0];
+            let rentAcceptedTime = logIDResp.data.rent_accepted_date.split('T')[1].split('+')[0];
+            newCell4.innerHTML = rentAcceptedDate + ' ' + rentAcceptedTime;
+          }
+
+          if (logIDResp.data.return_deadline !== null) {
+            let returnDeadlineDate = logIDResp.data.return_deadline.split('T')[0];
+            let returnDeadlineTime = logIDResp.data.return_deadline.split('T')[1].split('+')[0];
+            newCell5.innerHTML = returnDeadlineDate + ' ' + returnDeadlineTime;
+          }
+
+          if (logIDResp.data.return_requested_date !== null) {
+            let returnRequestedDate = logIDResp.data.return_requested_date.split('T')[0];
+            let returnRequestedTime = logIDResp.data.return_requested_date
+              .split('T')[1]
+              .split('+')[0];
+            newCell6.innerHTML = returnRequestedDate + ' ' + returnRequestedTime;
+          }
+
+          if (logIDResp.data.return_accepted_date !== null) {
+            let returnAcceptedDate = logIDResp.data.return_accepted_date.split('T')[0];
+            let returnAcceptedTime = logIDResp.data.return_accepted_date
+              .split('T')[1]
+              .split('+')[0];
+            newCell7.innerHTML = returnAcceptedDate + ' ' + returnAcceptedTime;
+          }
+        }
+      }
+
+      function loadBookmarkLog() {
+        axios
+          .get('/api/equip/log/bookmark/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawLogBookmarkTable(response.data);
+          })
+          .catch((error) => {
+            if (error.response.status === 404) {
+              let logBookmarkTable = document.getElementById('logBookmarkTable');
+              let newRow = logBookmarkTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '8');
+            } else {
+              alert('오류가 발생하였습니다.');
+            }
+          });
+      }
+
+      async function drawLogBookmarkTable(data) {
+        let logBookmarkTable = document.getElementById('logBookmarkTable');
+        let data_count = Math.min(data.length, 20); // max. 50 latest logs
+
+        for (let i = 0; i < data_count; i++) {
+          let newRow = logBookmarkTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+          let newCell3 = newRow.insertCell(3);
+          let newCell4 = newRow.insertCell(4);
+          let newCell5 = newRow.insertCell(5);
+          let newCell6 = newRow.insertCell(6);
+          let newCell7 = newRow.insertCell(7);
+
+          let logIDResp = await axios.get(`/api/equip/log/${data[i].id}/`);
+          newCell0.innerHTML = logIDResp.data.model_name;
+          newCell1.innerHTML = logIDResp.data.rent_count;
+          newCell2.innerHTML = logIDResp.data.rent_price;
+
+          if (logIDResp.data.rent_requested_date !== null) {
+            let rentRequestedDate = logIDResp.data.rent_requested_date.split('T')[0];
+            let rentRequestedTime = logIDResp.data.rent_requested_date.split('T')[1].split('+')[0];
+            newCell3.innerHTML = rentRequestedDate + ' ' + rentRequestedTime;
+          }
+
+          if (logIDResp.data.rent_accepted_date !== null) {
+            let rentAcceptedDate = logIDResp.data.rent_accepted_date.split('T')[0];
+            let rentAcceptedTime = logIDResp.data.rent_accepted_date.split('T')[1].split('+')[0];
+            newCell4.innerHTML = rentAcceptedDate + ' ' + rentAcceptedTime;
+          }
+
+          if (logIDResp.data.return_deadline !== null) {
+            let returnDeadlineDate = logIDResp.data.return_deadline.split('T')[0];
+            let returnDeadlineTime = logIDResp.data.return_deadline.split('T')[1].split('+')[0];
+            newCell5.innerHTML = returnDeadlineDate + ' ' + returnDeadlineTime;
+          }
+
+          if (logIDResp.data.return_requested_date !== null) {
+            let returnRequestedDate = logIDResp.data.return_requested_date.split('T')[0];
+            let returnRequestedTime = logIDResp.data.return_requested_date
+              .split('T')[1]
+              .split('+')[0];
+            newCell6.innerHTML = returnRequestedDate + ' ' + returnRequestedTime;
+          }
+
+          if (logIDResp.data.return_accepted_date !== null) {
+            let returnAcceptedDate = logIDResp.data.return_accepted_date.split('T')[0];
+            let returnAcceptedTime = logIDResp.data.return_accepted_date
+              .split('T')[1]
+              .split('+')[0];
+            newCell7.innerHTML = returnAcceptedDate + ' ' + returnAcceptedTime;
+          }
+        }
+      }
+
+      function loadLogByRent() {
+        axios
+          .get('/api/equip/log/mostrent/mine/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawLogByRentTable(response.data);
+          })
+          .catch((error) => {
+            if (error.response.status === 404) {
+              let logByRentTable = document.getElementById('logByRentTable');
+              let newRow = logByRentTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '3');
+            } else {
+              alert('오류가 발생하였습니다.');
+            }
+          });
+      }
+
+      async function drawLogByRentTable(data) {
+        let logByRentTable = document.getElementById('logByRentTable');
+        let data_count = Math.min(data.length, 50); // max. 50 latest logs
+
+        for (let i = 0; i < data_count; i++) {
+          let newRow = logByRentTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+
+          newCell0.innerHTML = i + 1;
+          newCell1.innerHTML = data[i].model_name;
+          newCell2.innerHTML = data[i].total_rent;
+        }
+      }
+
+      function loadLogByRentWeekly() {
+        axios
+          .get('/api/equip/log/mostrent/week/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawLogByRentWeeklyTable(response.data);
+          })
+          .catch((error) => {
+            if (error.response.status === 404) {
+              let logByRentWeeklyTable = document.getElementById('logByRentWeeklyTable');
+              let newRow = logByRentWeeklyTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '3');
+            } else {
+              alert('오류가 발생하였습니다.');
+            }
+          });
+      }
+
+      async function drawLogByRentWeeklyTable(data) {
+        let logByRentWeeklyTable = document.getElementById('logByRentWeeklyTable');
+        let data_count = Math.min(data.length, 50); // max. 50 latest logs
+
+        for (let i = 0; i < data_count; i++) {
+          let newRow = logByRentWeeklyTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+
+          newCell0.innerHTML = i + 1;
+          newCell1.innerHTML = data[i].model_name;
+          newCell2.innerHTML = data[i].total_rent;
+        }
+      }
+    </script>
+  </body>
+</html>

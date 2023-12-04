@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/user-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User: Return Accept</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      caption {
+        font-size: 2.5em;
+      }
+
+      #noInfo {
+        color: crimson;
+        font-weight: 600;
+        font-size: 1.5em;
+      }
+
+      #accept {
+        text-decoration: none;
+        color: navy;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>반납 승인</h1>
+    <hr />
+    <div class="left-user-menu">
+      <ul class="left-user-menu-list">
+        <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
+        <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
+        <li id="logout-btn" onclick="logout()">로그아웃</li>
+      </ul>
+    </div>
+    <div class="main-screen">
+      <table id="returnRequestTable">
+        <caption>
+          반납 신청 리스트
+        </caption>
+        <tr>
+          <th width="100px">신청자</th>
+          <th width="200px">모델명</th>
+          <th width="100px">수량</th>
+          <th width="100px">가격</th>
+          <th width="300px">신청 일자</th>
+          <th width="300px">반납 기한</th>
+          <th width="100px">승인</th>
+        </tr>
+      </table>
+    </div>
+
+    <script>
+      window.onload = () => {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              if (window.localStorage.getItem('access') === null) {
+                alert('로그인되어있지 않습니다. 로그인 해주세요.');
+                location.href = 'login.html';
+              } else {
+                refreshToken();
+              }
+            }
+          });
+
+        loadReturnRequest();
+      };
+
+      function refreshToken() {
+        axios
+          .post('/api/Accounts/auth/refresh/', {
+            refresh: window.localStorage.getItem('refresh')
+          })
+          .then((response) => {
+            window.localStorage.setItem('access', response.data.access);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              alert('다시 로그인해주세요.');
+              window.localStorage.removeItem('access');
+              window.localStorage.removeItem('refresh');
+              location.href = 'login.html';
+            }
+          });
+      }
+
+      function logout() {
+        if (confirm('정말 로그아웃하시겠습니까?')) {
+          alert('로그아웃되었습니다.');
+          window.localStorage.removeItem('access');
+          window.localStorage.removeItem('refresh');
+          location.href = 'login.html';
+        }
+      }
+
+      function loadReturnRequest() {
+        axios
+          .get('/api/equip/request/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawReturnRequestTable(response.data.return);
+          })
+          .catch((error) => {
+            if (error.response.status === 404) {
+              let returnRequestTable = document.getElementById('returnRequestTable');
+              let newRow = returnRequestTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '7');
+            } else {
+              alert('오류가 발생하였습니다.');
+            }
+          });
+      }
+
+      async function drawReturnRequestTable(data) {
+        let returnRequestTable = document.getElementById('returnRequestTable');
+
+        if (data.length === 0) {
+          let newRow = returnRequestTable.insertRow();
+          let newCell = newRow.insertCell();
+          newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+          newCell.setAttribute('colspan', '7');
+          return;
+        }
+
+        for (let i = 0; i < data.length; i++) {
+          let newRow = returnRequestTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+          let newCell3 = newRow.insertCell(3);
+          let newCell4 = newRow.insertCell(4);
+          let newCell5 = newRow.insertCell(5);
+          let newCell6 = newRow.insertCell(6);
+
+          let userIDResp = await axios.get(`/api/Accounts/auth/${data[i].user_id}/`);
+          let logIDResp = await axios.get(`/api/equip/log/${data[i].log_id}/`);
+          newCell0.innerHTML = userIDResp.data.nickname;
+          newCell1.innerHTML = logIDResp.data.model_name;
+          newCell2.innerHTML = logIDResp.data.rent_count;
+          newCell3.innerHTML = logIDResp.data.rent_price;
+          let rentDate = logIDResp.data.return_requested_date.split('T')[0];
+          let rentTime = logIDResp.data.return_requested_date.split('T')[1].split('+')[0];
+          newCell4.innerHTML = rentDate + ' ' + rentTime;
+          let returnDeadlineDate = logIDResp.data.return_deadline.split('T')[0];
+          let returnDeadlineTime = logIDResp.data.return_deadline.split('T')[1].split('+')[0];
+          newCell5.innerHTML = returnDeadlineDate + ' ' + returnDeadlineTime;
+          newCell6.innerHTML = `<a id="accept" href="javascript:acceptReturn(${data[i].log_id})">승인</a>`;
+        }
+      }
+
+      function acceptReturn(log_id) {
+        if (!confirm(`${log_id}번 신청 내역을 승인하시겠습니까?`)) {
+          return;
+        }
+
+        axios
+          .get(`/api/equip/return/accept/${log_id}/`, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then(() => {
+            alert('승인되었습니다.');
+            history.go(0);
+          })
+          .catch(() => {
+            alert('승인 중 오류가 발생하였습니다.');
+          });
+      }
+    </script>
+  </body>
+</html>

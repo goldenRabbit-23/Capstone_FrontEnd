@@ -45,28 +45,8 @@
         background-color: rgb(150, 150, 255);
       }
 
-      #modifyBtn {
-        width: 70px;
-        height: 40px;
-        font-size: 20px;
-        background-color: #4c381e;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      #modifyBtn:hover {
-        background-color: #6e522c;
-      }
-
-      #modifyBtn:active {
-        background-color: #916c39;
-      }
-
-      #removeBtn {
-        width: 70px;
+      #removeBookmarkBtn {
+        width: 150px;
         height: 40px;
         font-size: 20px;
         background-color: #b22222;
@@ -77,32 +57,12 @@
         cursor: pointer;
       }
 
-      #removeBtn:hover {
+      #removeBookmarkBtn:hover {
         background-color: #ff0000;
       }
 
-      #removeBtn:active {
+      #removeBookmarkBtn:active {
         background-color: #ff4040;
-      }
-
-      #bookmarkBtn {
-        width: 150px;
-        height: 40px;
-        font-size: 20px;
-        background-color: #b7950b;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      #bookmarkBtn:hover {
-        background-color: #d4ac0d;
-      }
-
-      #bookmarkBtn:active {
-        background-color: #f4d03f;
       }
 
       img {
@@ -173,7 +133,10 @@
           </tr>
         </tbody>
       </table>
-      <div id="buttonsDiv"></div>
+      <div id="buttonsDiv">
+        <button id="removeBookmarkBtn" onclick="removeBookmark()">즐겨찾기 삭제</button>
+        <button id="goBackBtn" onclick="location.href='user_favorites.html'">목록</button>
+      </div>
     </div>
 
     <script>
@@ -268,74 +231,27 @@
         row7.innerHTML = list.total_stock;
         row8.innerHTML = list.current_stock;
         row9.innerHTML = list.manufacturer;
-
-        // buttons
-        let buttonsDiv = document.getElementById('buttonsDiv');
-
-        axios
-          .get('/api/Accounts/auth/', {
-            headers: {
-              Authorization: `Bearer ${window.localStorage.getItem('access')}`
-            }
-          })
-          .then((response) => {
-            if (response.data.user.is_staff === true) {
-              buttonsDiv.innerHTML = `<button id="goBackBtn" onclick="location.href='user_item_list.html'">목록</button>
-              <button id="modifyBtn" onclick="modify()">수정</button>
-              <button id="removeBtn" onclick="remove()">삭제</button>`;
-            } else {
-              buttonsDiv.innerHTML = `<button id="bookmarkBtn" onclick="bookmark()">즐겨찾기 등록</button>
-              <button id="goBackBtn" onclick="location.href='user_item_list.html'">목록</button>`;
-            }
-          });
       }
 
-      function modify() {
-        let model_name = location.href.split('?')[1];
-        location.href = `modify_equipment.html?${model_name}`;
-      }
-
-      function remove() {
-        if (!confirm('정말 삭제하시겠습니까?')) {
+      function removeBookmark() {
+        if (!confirm('즐겨찾기에서 삭제하시겠습니까?')) {
           return;
         }
 
         let model_name = location.href.split('?')[1];
 
         axios
-          .delete(`/api/equip/inventory/${model_name}/`, {
+          .delete(`/api/bookmark/box/${model_name}/`, {
             headers: {
               Authorization: `Bearer ${window.localStorage.getItem('access')}`
             }
           })
           .then(() => {
             alert('삭제되었습니다.');
-            location.href = 'user_item_list.html';
+            location.href = 'user_favorites.html';
           })
           .catch(() => {
             alert('삭제에 실패하였습니다.');
-          });
-      }
-
-      function bookmark() {
-        let model_name = location.href.split('?')[1];
-
-        axios
-          .post(
-            '/api/bookmark/box/',
-            { model_name },
-            {
-              headers: {
-                Authorization: `Bearer ${window.localStorage.getItem('access')}`
-              }
-            }
-          )
-          .then(() => {
-            alert('즐겨찾기에 등록되었습니다.');
-            history.go(0);
-          })
-          .catch(() => {
-            alert('이미 등록되어있는 기자재입니다.');
           });
       }
     </script>

@@ -4,23 +4,135 @@
     <link rel="stylesheet" type="text/css" href="css/user-style.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User: Rent</title>
+    <title>User: Rent/Return</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      #welcomeUser {
+        margin-top: 10px;
+        font-size: 2.5em;
+        color: green;
+        font-weight: 600;
+      }
+
+      #welcomeAdmin {
+        margin-top: 10px;
+        font-size: 2.5em;
+        color: red;
+        font-weight: 600;
+      }
+
+      #message {
+        font-size: 1.8em;
+        color: black;
+        font-weight: 400;
+      }
+
+      #buttonsDiv {
+        margin-top: 10px;
+      }
+
+      #rentBtn {
+        margin-top: 10px;
+        width: 150px;
+        height: 60px;
+        font-size: 20px;
+        background-color: #008000;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #rentBtn:hover {
+        background-color: #50c878;
+      }
+
+      #rentBtn:active {
+        background-color: #90ee90;
+      }
+
+      #returnBtn {
+        margin-top: 10px;
+        width: 150px;
+        height: 60px;
+        font-size: 20px;
+        background-color: #008000;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #returnBtn:hover {
+        background-color: #50c878;
+      }
+
+      #returnBtn:active {
+        background-color: #90ee90;
+      }
+
+      #rentAccBtn {
+        margin-top: 10px;
+        width: 150px;
+        height: 60px;
+        font-size: 20px;
+        background-color: #b22222;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #rentAccBtn:hover {
+        background-color: #ff0000;
+      }
+
+      #rentAccBtn:active {
+        background-color: #ff4040;
+      }
+
+      #returnAccBtn {
+        margin-top: 10px;
+        width: 150px;
+        height: 60px;
+        font-size: 20px;
+        background-color: #b22222;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #returnAccBtn:hover {
+        background-color: #ff0000;
+      }
+
+      #returnAccBtn:active {
+        background-color: #ff4040;
+      }
+    </style>
   </head>
   <body>
-    <h1>대여</h1>
+    <h1>대여/반납</h1>
     <hr />
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
-        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
         <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
-        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
         <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
         <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
         <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
         <li id="logout-btn" onclick="logout()">로그아웃</li>
       </ul>
+    </div>
+    <div class="main-screen">
+      <div id="buttonsDiv"></div>
     </div>
 
     <script>
@@ -41,6 +153,8 @@
               }
             }
           });
+
+        loadButtons();
       };
 
       function refreshToken() {
@@ -68,6 +182,36 @@
           window.localStorage.removeItem('refresh');
           location.href = 'login.html';
         }
+      }
+
+      function loadButtons() {
+        let buttonsDiv = document.getElementById('buttonsDiv');
+
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              buttonsDiv.innerHTML = `<span id="welcomeAdmin">[관리자] ${response.data.user.nickname}</span>
+              <br /><br />
+              <span id="message">수행할 작업을 선택하세요.</span>
+              <br />
+              <button id="rentAccBtn" onclick="location.href='rent_accept.html'">대여 승인</button>
+              &nbsp;
+              <button id="returnAccBtn" onclick="location.href='return_accept.html'">반납 승인</button>`;
+            } else {
+              buttonsDiv.innerHTML = `<span id="welcomeUser">[유저] ${response.data.user.nickname}</span>
+              <br /><br />
+              <span id="message">수행할 작업을 선택하세요.</span>
+              <br />
+              <button id="rentBtn" onclick="location.href='rent_request.html'">대여 신청</button>
+              &nbsp;
+              <button id="returnBtn" onclick="location.href='return_request.html'">반납 신청</button>`;
+            }
+          });
       }
     </script>
   </body>

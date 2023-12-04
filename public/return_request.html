@@ -4,49 +4,28 @@
     <link rel="stylesheet" type="text/css" href="css/user-style.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User: Item List</title>
+    <title>User: Return Request</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-      #itemTable {
-        margin-top: 10px;
+      caption {
+        font-size: 2.5em;
       }
 
-      #itemSelection {
+      #noInfo {
+        color: crimson;
+        font-weight: 600;
+        font-size: 1.5em;
+      }
+
+      #return {
         text-decoration: none;
-        color: darkgreen;
+        color: green;
         font-weight: 500;
-      }
-
-      #buttonDiv {
-        width: 1250px;
-        text-align: right;
-        margin-top: 10px;
-      }
-
-      .searchBox {
-        width: 400px;
-        height: 40px;
-        font-size: 1.3em;
-        padding-left: 10px;
-        padding-right: 10px;
-        border: 2px solid blue;
-        outline: none;
-        margin-top: 10px;
-      }
-
-      .searchBtn {
-        width: 60px;
-        height: 44px;
-        font-size: 20px;
-        border: 1px solid black;
-        background-color: blue;
-        color: #ffffff;
-        cursor: pointer;
       }
     </style>
   </head>
   <body>
-    <h1>기자재 검색</h1>
+    <h1>반납 신청</h1>
     <hr />
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
@@ -61,17 +40,18 @@
       </ul>
     </div>
     <div class="main-screen">
-      <input class="searchBox" type="text" value="" placeholder="검색어를 입력하세요" />
-      <input class="searchBtn" type="button" value="검색" onclick="search()" />
-      <table id="itemTable">
+      <table id="rentTable">
+        <caption>
+          대여 중 리스트
+        </caption>
         <thead>
           <tr>
             <th scope="col" width="200px">모델명</th>
-            <th scope="col" width="200px">상품명</th>
-            <th scope="col" width="150px">기종</th>
-            <th scope="col" width="150px">가격</th>
-            <th scope="col" width="150px">남은 수량</th>
-            <th scope="col" width="150px">상세 보기</th>
+            <th scope="col" width="100px">수량</th>
+            <th scope="col" width="100px">가격</th>
+            <th scope="col" width="300px">승인 일자</th>
+            <th scope="col" width="300px">반납 기한</th>
+            <th scope="col" width="100px">반납</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -96,6 +76,8 @@
               }
             }
           });
+
+        loadRentList();
       };
 
       function refreshToken() {
@@ -125,27 +107,31 @@
         }
       }
 
-      function search() {
-        let searchBox = document.querySelector('.searchBox');
-
-        while (document.getElementById('itemTable').rows.length > 1) {
-          document.getElementById('itemTable').deleteRow(1);
-        }
-
+      function loadRentList() {
         axios
-          .post('/api/equip/inventory/search/', {
-            searchData: searchBox.value
+          .get('/api/equip/rent/request/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
           })
           .then((response) => {
-            drawTable(response.data);
+            if (response.status === 204) {
+              let rentTable = document.getElementById('rentTable');
+              let newRow = rentTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '6');
+            } else {
+              drawRentBoard(response.data);
+            }
           });
       }
 
-      function drawTable(list) {
-        let itemTable = document.getElementById('itemTable');
+      async function drawRentBoard(data) {
+        let rentTable = document.getElementById('rentTable');
 
-        for (let i = 0; i < list.length; i++) {
-          let newRow = itemTable.insertRow();
+        for (let i = 0; i < data.length; i++) {
+          let newRow = rentTable.insertRow();
 
           let newCell0 = newRow.insertCell(0);
           let newCell1 = newRow.insertCell(1);
@@ -154,13 +140,38 @@
           let newCell4 = newRow.insertCell(4);
           let newCell5 = newRow.insertCell(5);
 
-          newCell0.innerHTML = list[i].model_name;
-          newCell1.innerHTML = list[i].name;
-          newCell2.innerHTML = list[i].type;
-          newCell3.innerHTML = list[i].price;
-          newCell4.innerHTML = list[i].current_stock;
-          newCell5.innerHTML = `<a id='itemSelection' href='view_selected_item.html?${newCell0.innerHTML}'>보기</a>`;
+          let logIDResp = await axios.get(`/api/equip/log/${data[i].log_id}/`);
+          newCell0.innerHTML = logIDResp.data.model_name;
+          newCell1.innerHTML = logIDResp.data.rent_count;
+          newCell2.innerHTML = logIDResp.data.rent_price;
+          let rentAcceptedDate = logIDResp.data.rent_accepted_date.split('T')[0];
+          let rentAcceptedTime = logIDResp.data.rent_accepted_date.split('T')[1].split('+')[0];
+          newCell3.innerHTML = rentAcceptedDate + ' ' + rentAcceptedTime;
+          let returnDeadlineDate = logIDResp.data.return_deadline.split('T')[0];
+          let returnDeadlineTime = logIDResp.data.return_deadline.split('T')[1].split('+')[0];
+          newCell4.innerHTML = returnDeadlineDate + ' ' + returnDeadlineTime;
+          newCell5.innerHTML = `<a id="return" href="javascript:returnRequest(${data[i].log_id})">신청</a>`;
         }
+      }
+
+      function returnRequest(log_id) {
+        if (!confirm('반납 신청하시겠습니까?')) {
+          return;
+        }
+
+        axios
+          .get(`/api/equip/return/request/${log_id}/`, {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then(() => {
+            alert('반납 신청되었습니다.');
+            history.go(0);
+          })
+          .catch(() => {
+            alert('반납 신청에 실패하였습니다.');
+          });
       }
     </script>
   </body>

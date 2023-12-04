@@ -7,16 +7,63 @@
     <title>User: Modify Info</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-      #modify,
-      #reset {
-        display: inline-block;
-        margin-top: 10px;
-        width: 216px;
+      caption {
+        font-size: 2.5em;
+      }
+
+      input {
+        width: 100%;
+        font-size: 12px;
+        color: black;
         border: 1px solid black;
-        padding-top: 3px;
-        padding-bottom: 3px;
-        background-color: aliceblue;
+        padding: 5px;
+        outline: none;
+      }
+
+      #buttonDiv {
+        width: 425px;
+        text-align: right;
+        margin-top: 10px;
+      }
+
+      #modifyBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #4c381e;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
         cursor: pointer;
+      }
+
+      #modifyBtn:hover {
+        background-color: #6e522c;
+      }
+
+      #modifyBtn:active {
+        background-color: #916c39;
+      }
+
+      #resetBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #b22222;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #resetBtn:hover {
+        background-color: #ff0000;
+      }
+
+      #resetBtn:active {
+        background-color: #ff4040;
       }
 
       a {
@@ -25,6 +72,7 @@
         margin-top: 30px;
         text-decoration: none;
         color: red;
+        font-size: 2em;
         font-weight: 700;
       }
     </style>
@@ -35,9 +83,9 @@
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
-        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
         <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
-        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
         <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
         <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
         <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
@@ -79,8 +127,10 @@
           </tr>
         </tbody>
       </table>
-      <button id="modify" type="button" onclick="modify()">Modify</button>
-      <button id="reset" type="button" onclick="reset()">Reset</button>
+      <div id="buttonDiv">
+        <button id="modifyBtn" onclick="modify()">수정</button>
+        <button id="resetBtn" onclick="reset()">초기화</button>
+      </div>
       <a href="javascript:withdraw()">회원 탈퇴</a>
     </div>
 

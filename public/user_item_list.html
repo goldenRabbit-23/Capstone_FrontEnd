@@ -110,9 +110,9 @@
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
-        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
         <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
-        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
         <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
         <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
         <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
@@ -136,16 +136,7 @@
         </thead>
         <tbody></tbody>
       </table>
-      <div id="buttonDiv">
-        <button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
-        <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
-          최신순 보기
-        </button>
-        <button id="showByRentBtn" onclick="location.href='user_item_list_byRent.html'">
-          대여순 보기
-        </button>
-        <button id="addEquipBtn" onclick="location.href='add_equipment.html'">추가</button>
-      </div>
+      <div id="buttonDiv"></div>
     </div>
 
     <script>
@@ -214,6 +205,7 @@
       }
 
       function drawTable(list) {
+        // items
         let itemTable = document.getElementById('itemTable');
 
         for (let i = 0; i < list.length; i++) {
@@ -233,6 +225,36 @@
           newCell4.innerHTML = list[i].current_stock;
           newCell5.innerHTML = `<a id='itemSelection' href='view_selected_item.html?${newCell0.innerHTML}'>보기</a>`;
         }
+
+        // buttons
+        let buttonDiv = document.getElementById('buttonDiv');
+
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              buttonDiv.innerHTML = `<button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
+              <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
+                최신순 보기
+              </button>
+              <button id="showByRentBtn" onclick="location.href='user_item_list_byRent.html'">
+                대여순 보기
+              </button>
+              <button id="addEquipBtn" onclick="location.href='add_equipment.html'">추가</button>`;
+            } else {
+              buttonDiv.innerHTML = `<button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
+              <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
+                최신순 보기
+              </button>
+              <button id="showByRentBtn" onclick="location.href='user_item_list_byRent.html'">
+                대여순 보기
+              </button>`;
+            }
+          });
       }
     </script>
   </body>

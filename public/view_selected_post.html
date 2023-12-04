@@ -144,9 +144,9 @@
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
-        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
         <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
-        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
         <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
         <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
         <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
@@ -312,10 +312,11 @@
             Authorization: `Bearer ${window.localStorage.getItem('access')}`
           }
         });
+        let isStaff = checkLoginResp.data.user.is_staff;
         let loginUserID = checkLoginResp.data.user.id;
 
         let buttonsDiv = document.getElementById('buttonsDiv');
-        if (loginUserID === list.user_id) {
+        if (loginUserID === list.user_id || isStaff === true) {
           buttonsDiv.innerHTML = `<button id="goBackBtn" onclick="location.href='user_qa.html'">목록</button>
         <button id="modifyBtn" onclick="modify()">수정</button>
         <button id="removeBtn" onclick="remove()">삭제</button>`;

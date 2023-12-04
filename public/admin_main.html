@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/user-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User: Main</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      #welcome {
+        margin-top: 10px;
+        font-size: 2.5em;
+        color: red;
+        font-weight: 600;
+      }
+
+      caption {
+        font-size: 2.5em;
+      }
+
+      #noInfo {
+        color: crimson;
+        font-weight: 600;
+        font-size: 1.5em;
+      }
+
+      #accept {
+        text-decoration: none;
+        color: navy;
+        font-weight: 500;
+      }
+
+      #decline {
+        text-decoration: none;
+        color: crimson;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>마이페이지</h1>
+    <hr />
+    <div class="left-user-menu">
+      <ul class="left-user-menu-list">
+        <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
+        <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
+        <li id="logout-btn" onclick="logout()">로그아웃</li>
+      </ul>
+    </div>
+    <div class="main-screen">
+      <span id="welcome"></span>
+      <br /><br />
+      <table id="rentRequestTable">
+        <caption>
+          대여 승인 대기 리스트
+        </caption>
+        <tr>
+          <th width="100px">신청자</th>
+          <th width="200px">모델명</th>
+          <th width="100px">수량</th>
+          <th width="100px">가격</th>
+          <th width="300px">신청 일자</th>
+        </tr>
+      </table>
+      <br /><br />
+      <table id="returnRequestTable">
+        <caption>
+          반납 승인 대기 리스트
+        </caption>
+        <tr>
+          <th width="100px">신청자</th>
+          <th width="200px">모델명</th>
+          <th width="100px">수량</th>
+          <th width="100px">가격</th>
+          <th width="300px">신청 일자</th>
+          <th width="300px">반납 기한</th>
+        </tr>
+      </table>
+    </div>
+
+    <script>
+      window.onload = () => {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            loadUserInfo();
+            loadRentRequest();
+            loadReturnRequest();
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              if (window.localStorage.getItem('access') === null) {
+                alert('로그인되어있지 않습니다. 로그인 해주세요.');
+                location.href = 'login.html';
+              } else {
+                refreshToken();
+              }
+            }
+          });
+      };
+
+      function refreshToken() {
+        axios
+          .post('/api/Accounts/auth/refresh/', {
+            refresh: window.localStorage.getItem('refresh')
+          })
+          .then((response) => {
+            window.localStorage.setItem('access', response.data.access);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              alert('다시 로그인해주세요.');
+              window.localStorage.removeItem('access');
+              window.localStorage.removeItem('refresh');
+              location.href = 'login.html';
+            }
+          });
+      }
+
+      function logout() {
+        if (confirm('정말 로그아웃하시겠습니까?')) {
+          alert('로그아웃되었습니다.');
+          window.localStorage.removeItem('access');
+          window.localStorage.removeItem('refresh');
+          location.href = 'login.html';
+        }
+      }
+
+      function loadUserInfo() {
+        let welcome = document.getElementById('welcome');
+
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            welcome.innerHTML = `관리자 ${response.data.user.nickname}님, 환영합니다!`;
+          });
+      }
+
+      function loadRentRequest() {
+        axios
+          .get('/api/equip/request/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawRentRequestTable(response.data.rent);
+          })
+          .catch((error) => {
+            if (error.response.status === 404) {
+              let rentRequestTable = document.getElementById('rentRequestTable');
+              let newRow = rentRequestTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '5');
+            } else {
+              alert('오류가 발생하였습니다.');
+            }
+          });
+      }
+
+      async function drawRentRequestTable(data) {
+        let rentRequestTable = document.getElementById('rentRequestTable');
+
+        if (data.length === 0) {
+          let newRow = rentRequestTable.insertRow();
+          let newCell = newRow.insertCell();
+          newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+          newCell.setAttribute('colspan', '5');
+          return;
+        }
+
+        for (let i = 0; i < data.length; i++) {
+          let newRow = rentRequestTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+          let newCell3 = newRow.insertCell(3);
+          let newCell4 = newRow.insertCell(4);
+
+          let userIDResp = await axios.get(`/api/Accounts/auth/${data[i].user_id}/`);
+          let logIDResp = await axios.get(`/api/equip/log/${data[i].log_id}/`);
+          newCell0.innerHTML = userIDResp.data.nickname;
+          newCell1.innerHTML = logIDResp.data.model_name;
+          newCell2.innerHTML = logIDResp.data.rent_count;
+          newCell3.innerHTML = logIDResp.data.rent_price;
+          let rentDate = logIDResp.data.rent_requested_date.split('T')[0];
+          let rentTime = logIDResp.data.rent_requested_date.split('T')[1].split('+')[0];
+          newCell4.innerHTML = rentDate + ' ' + rentTime;
+        }
+      }
+
+      function loadReturnRequest() {
+        axios
+          .get('/api/equip/request/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawReturnRequestTable(response.data.return);
+          })
+          .catch((error) => {
+            if (error.response.status === 404) {
+              let returnRequestTable = document.getElementById('returnRequestTable');
+              let newRow = returnRequestTable.insertRow();
+              let newCell = newRow.insertCell();
+              newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+              newCell.setAttribute('colspan', '6');
+            } else {
+              alert('오류가 발생하였습니다.');
+            }
+          });
+      }
+
+      async function drawReturnRequestTable(data) {
+        let returnRequestTable = document.getElementById('returnRequestTable');
+
+        if (data.length === 0) {
+          let newRow = returnRequestTable.insertRow();
+          let newCell = newRow.insertCell();
+          newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+          newCell.setAttribute('colspan', '6');
+          return;
+        }
+
+        for (let i = 0; i < data.length; i++) {
+          let newRow = returnRequestTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+          let newCell3 = newRow.insertCell(3);
+          let newCell4 = newRow.insertCell(4);
+          let newCell5 = newRow.insertCell(5);
+
+          let userIDResp = await axios.get(`/api/Accounts/auth/${data[i].user_id}/`);
+          let logIDResp = await axios.get(`/api/equip/log/${data[i].log_id}/`);
+          newCell0.innerHTML = userIDResp.data.nickname;
+          newCell1.innerHTML = logIDResp.data.model_name;
+          newCell2.innerHTML = logIDResp.data.rent_count;
+          newCell3.innerHTML = logIDResp.data.rent_price;
+          let rentDate = logIDResp.data.return_requested_date.split('T')[0];
+          let rentTime = logIDResp.data.return_requested_date.split('T')[1].split('+')[0];
+          newCell4.innerHTML = rentDate + ' ' + rentTime;
+          let returnDeadlineDate = logIDResp.data.return_deadline.split('T')[0];
+          let returnDeadlineTime = logIDResp.data.return_deadline.split('T')[1].split('+')[0];
+          newCell5.innerHTML = returnDeadlineDate + ' ' + returnDeadlineTime;
+        }
+      }
+    </script>
+  </body>
+</html>

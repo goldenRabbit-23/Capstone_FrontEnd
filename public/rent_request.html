@@ -4,18 +4,29 @@
     <link rel="stylesheet" type="text/css" href="css/user-style.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User: Check Rent List</title>
+    <title>User: Rent Request</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      caption {
+        font-size: 2.5em;
+      }
+
+      #itemSelection {
+        text-decoration: none;
+        color: darkgreen;
+        font-weight: 500;
+      }
+    </style>
   </head>
   <body>
-    <h1>대여물품 확인</h1>
+    <h1>대여 신청</h1>
     <hr />
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
-        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
         <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
-        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
         <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
         <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
         <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
@@ -23,42 +34,21 @@
       </ul>
     </div>
     <div class="main-screen">
-      <table>
+      <table id="itemTable">
         <caption>
-          대여물품
+          전체 기자재
         </caption>
         <thead>
           <tr>
-            <th scope="col">품명</th>
-            <th scope="col">품번</th>
-            <th scope="col">대여 일자</th>
-            <th scope="col">반납 기한</th>
-            <th scope="col">수량</th>
+            <th scope="col" width="200px">모델명</th>
+            <th scope="col" width="200px">상품명</th>
+            <th scope="col" width="150px">기종</th>
+            <th scope="col" width="150px">가격</th>
+            <th scope="col" width="150px">남은 수량</th>
+            <th scope="col" width="150px">상세 보기</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <th scope="row">마이크</th>
-            <td>MK-99</td>
-            <td>2023.09.15.</td>
-            <td>2023.11.01.</td>
-            <td>3</td>
-          </tr>
-          <tr>
-            <th scope="row">스피커</th>
-            <td>Britz</td>
-            <td>2023.09.18.</td>
-            <td>2023.11.04.</td>
-            <td>2</td>
-          </tr>
-          <tr>
-            <th scope="row">앰프</th>
-            <td>Amp</td>
-            <td>2023.09.25.</td>
-            <td>2023.11.11.</td>
-            <td>1</td>
-          </tr>
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
 
@@ -80,6 +70,8 @@
               }
             }
           });
+
+        loadItemList();
       };
 
       function refreshToken() {
@@ -106,6 +98,44 @@
           window.localStorage.removeItem('access');
           window.localStorage.removeItem('refresh');
           location.href = 'login.html';
+        }
+      }
+
+      function loadItemList() {
+        axios
+          .get('/api/equip/inventory/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.status === 204) {
+              alert('기자재 데이터가 존재하지 않습니다.');
+            } else {
+              drawTable(response.data);
+            }
+          });
+      }
+
+      function drawTable(list) {
+        let itemTable = document.getElementById('itemTable');
+
+        for (let i = 0; i < list.length; i++) {
+          let newRow = itemTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+          let newCell2 = newRow.insertCell(2);
+          let newCell3 = newRow.insertCell(3);
+          let newCell4 = newRow.insertCell(4);
+          let newCell5 = newRow.insertCell(5);
+
+          newCell0.innerHTML = list[i].model_name;
+          newCell1.innerHTML = list[i].name;
+          newCell2.innerHTML = list[i].type;
+          newCell3.innerHTML = list[i].price;
+          newCell4.innerHTML = list[i].current_stock;
+          newCell5.innerHTML = `<a id='itemSelection' href='rent_request_detail.html?${newCell0.innerHTML}'>보기</a>`;
         }
       }
     </script>

@@ -45,11 +45,11 @@
         background-color: rgb(150, 150, 255);
       }
 
-      #modifyBtn {
+      #rentBtn {
         width: 70px;
         height: 40px;
         font-size: 20px;
-        background-color: #4c381e;
+        background-color: #7d6608;
         color: white;
         border: 2px solid black;
         border-radius: 7px;
@@ -57,61 +57,37 @@
         cursor: pointer;
       }
 
-      #modifyBtn:hover {
-        background-color: #6e522c;
-      }
-
-      #modifyBtn:active {
-        background-color: #916c39;
-      }
-
-      #removeBtn {
-        width: 70px;
-        height: 40px;
-        font-size: 20px;
-        background-color: #b22222;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-
-      #removeBtn:hover {
-        background-color: #ff0000;
-      }
-
-      #removeBtn:active {
-        background-color: #ff4040;
-      }
-
-      #bookmarkBtn {
-        width: 150px;
-        height: 40px;
-        font-size: 20px;
+      #rentBtn:hover {
         background-color: #b7950b;
-        color: white;
-        border: 2px solid black;
-        border-radius: 7px;
-        transition: all 0.3s ease;
-        cursor: pointer;
       }
 
-      #bookmarkBtn:hover {
-        background-color: #d4ac0d;
-      }
-
-      #bookmarkBtn:active {
-        background-color: #f4d03f;
+      #rentBtn:active {
+        background-color: #f1c40f;
       }
 
       img {
         width: 100%;
       }
+
+      input[id='rentCount'] {
+        width: 3em;
+        font-size: 1.2em;
+        border: 1px solid #cccccc;
+        background-color: transparent;
+        text-align: center;
+        border-radius: 0.3em;
+        padding: 0.4em 0.2em;
+      }
+
+      input[id='rentCount']::-webkit-outer-spin-button,
+      input[id='rentCount']::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
-    <h1>기자재 상세정보</h1>
+    <h1>대여 신청</h1>
     <hr />
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
@@ -173,7 +149,17 @@
           </tr>
         </tbody>
       </table>
-      <div id="buttonsDiv"></div>
+      <br />
+      <table id="rentTable">
+        <tr>
+          <th>수량</th>
+          <td><input id="rentCount" type="number" min="0" step="1" value="0" /></td>
+        </tr>
+      </table>
+      <div id="buttonsDiv">
+        <button id="goBackBtn" onclick="location.href='rent_request.html'">목록</button>
+        <button id="rentBtn" onclick="rent()">대여</button>
+      </div>
     </div>
 
     <script>
@@ -268,62 +254,23 @@
         row7.innerHTML = list.total_stock;
         row8.innerHTML = list.current_stock;
         row9.innerHTML = list.manufacturer;
-
-        // buttons
-        let buttonsDiv = document.getElementById('buttonsDiv');
-
-        axios
-          .get('/api/Accounts/auth/', {
-            headers: {
-              Authorization: `Bearer ${window.localStorage.getItem('access')}`
-            }
-          })
-          .then((response) => {
-            if (response.data.user.is_staff === true) {
-              buttonsDiv.innerHTML = `<button id="goBackBtn" onclick="location.href='user_item_list.html'">목록</button>
-              <button id="modifyBtn" onclick="modify()">수정</button>
-              <button id="removeBtn" onclick="remove()">삭제</button>`;
-            } else {
-              buttonsDiv.innerHTML = `<button id="bookmarkBtn" onclick="bookmark()">즐겨찾기 등록</button>
-              <button id="goBackBtn" onclick="location.href='user_item_list.html'">목록</button>`;
-            }
-          });
       }
 
-      function modify() {
+      function rent() {
         let model_name = location.href.split('?')[1];
-        location.href = `modify_equipment.html?${model_name}`;
-      }
+        let rent_count = document.getElementById('rentCount').value;
 
-      function remove() {
-        if (!confirm('정말 삭제하시겠습니까?')) {
+        if (!confirm(`${model_name}을 ${rent_count}개 대여하시겠습니까?`)) {
           return;
         }
 
-        let model_name = location.href.split('?')[1];
-
-        axios
-          .delete(`/api/equip/inventory/${model_name}/`, {
-            headers: {
-              Authorization: `Bearer ${window.localStorage.getItem('access')}`
-            }
-          })
-          .then(() => {
-            alert('삭제되었습니다.');
-            location.href = 'user_item_list.html';
-          })
-          .catch(() => {
-            alert('삭제에 실패하였습니다.');
-          });
-      }
-
-      function bookmark() {
-        let model_name = location.href.split('?')[1];
-
         axios
           .post(
-            '/api/bookmark/box/',
-            { model_name },
+            '/api/equip/rent/request/',
+            {
+              model_name,
+              rent_count
+            },
             {
               headers: {
                 Authorization: `Bearer ${window.localStorage.getItem('access')}`
@@ -331,11 +278,11 @@
             }
           )
           .then(() => {
-            alert('즐겨찾기에 등록되었습니다.');
-            history.go(0);
+            alert('대여 신청이 완료되었습니다.');
+            location.href = 'rent_request.html';
           })
           .catch(() => {
-            alert('이미 등록되어있는 기자재입니다.');
+            alert('대여 신청에 실패하였습니다.');
           });
       }
     </script>

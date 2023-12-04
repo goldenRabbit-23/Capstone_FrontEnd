@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User: Favorites</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      caption {
+        font-size: 2.5em;
+      }
+
+      #itemSelection {
+        text-decoration: none;
+        color: darkgreen;
+        font-weight: 500;
+      }
+
+      #noInfo {
+        color: crimson;
+        font-weight: 600;
+        font-size: 1.5em;
+      }
+    </style>
   </head>
   <body>
     <h1>즐겨찾기</h1>
@@ -13,14 +30,28 @@
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
-        <li id="menu-list" onclick="location.href='user_check_rent_list.html'">대여물품 확인</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
         <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
-        <li id="menu-list" onclick="location.href='user_rent.html'">대여</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
         <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
         <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
         <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
         <li id="logout-btn" onclick="logout()">로그아웃</li>
       </ul>
+    </div>
+    <div class="main-screen">
+      <table id="bookmarkTable">
+        <caption>
+          나의 즐겨찾기
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col" width="200px">모델명</th>
+            <th scope="col" width="150px">상세 보기</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
     <script>
@@ -29,6 +60,13 @@
           .get('/api/Accounts/auth/', {
             headers: {
               Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              location.href = 'admin_main.html';
+            } else {
+              loadBookmarks();
             }
           })
           .catch((error) => {
@@ -67,6 +105,40 @@
           window.localStorage.removeItem('access');
           window.localStorage.removeItem('refresh');
           location.href = 'login.html';
+        }
+      }
+
+      function loadBookmarks() {
+        axios
+          .get('/api/bookmark/box/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            drawTable(response.data);
+          })
+          .catch(() => {
+            let bookmarkTable = document.getElementById('bookmarkTable');
+            let newRow = bookmarkTable.insertRow();
+            let newCell = newRow.insertCell();
+            newCell.innerHTML = '<span id="noInfo">내역 없음</span>';
+            newCell.setAttribute('colspan', '2');
+          });
+      }
+
+      function drawTable(list) {
+        // items
+        let bookmarkTable = document.getElementById('bookmarkTable');
+
+        for (let i = 0; i < list.length; i++) {
+          let newRow = bookmarkTable.insertRow();
+
+          let newCell0 = newRow.insertCell(0);
+          let newCell1 = newRow.insertCell(1);
+
+          newCell0.innerHTML = list[i].model_name;
+          newCell1.innerHTML = `<a id='itemSelection' href='view_selected_item_bookmark.html?${newCell0.innerHTML}'>보기</a>`;
         }
       }
     </script>
