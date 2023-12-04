@@ -7,6 +7,28 @@
     <title>User: Item List</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #42bea5;
+      }
+      .container #logo {
+        margin-left: 30px;
+        width: 20%;
+      }
+      .container #header {
+        font-size: 5em;
+        color: #ffffff;
+        text-shadow: 0 0 0.1em, 0 0 0.3em;
+        text-align: center;
+      }
+      .container .item {
+        padding: 10px;
+      }
+      .container #margin {
+        padding: 290px;
+      }
+
       caption {
         font-size: 2.5em;
       }
@@ -105,8 +127,13 @@
     </style>
   </head>
   <body>
-    <h1>전체 기자재</h1>
-    <hr />
+    <div class="container">
+      <div class="item">
+        <a id="selectLogo" href="user_dashboard.html"></a>
+      </div>
+      <div class="item"><span id="header">전체 기자재</span></div>
+      <div class="item"><span id="margin"></span></div>
+    </div>
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
@@ -136,16 +163,7 @@
         </thead>
         <tbody></tbody>
       </table>
-      <div id="buttonDiv">
-        <button id="searchBtn" onclick="search()">검색</button>
-        <button id="showByNameBtn" onclick="location.href='user_item_list.html'">
-          이름순 보기
-        </button>
-        <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
-          최신순 보기
-        </button>
-        <button id="addEquipBtn" onclick="location.href='add_equipment.html'">추가</button>
-      </div>
+      <div id="buttonDiv"></div>
     </div>
 
     <script>
@@ -167,6 +185,7 @@
             }
           });
 
+        loadLogo();
         loadItemList();
       };
 
@@ -195,6 +214,22 @@
           window.localStorage.removeItem('refresh');
           location.href = 'login.html';
         }
+      }
+
+      function loadLogo() {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              selectLogo.innerHTML = `<img id="logo" src="logo_admin.png" />`;
+            } else {
+              selectLogo.innerHTML = `<img id="logo" src="logo.png" />`;
+            }
+          });
       }
 
       function loadItemList() {
@@ -233,6 +268,36 @@
           newCell4.innerHTML = list[i].current_stock;
           newCell5.innerHTML = `<a id='itemSelection' href='view_selected_item.html?${newCell0.innerHTML}'>보기</a>`;
         }
+
+        // buttons
+        let buttonDiv = document.getElementById('buttonDiv');
+
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              buttonDiv.innerHTML = `<button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
+              <button id="showByNameBtn" onclick="location.href='user_item_list.html'">
+                이름순 보기
+              </button>
+              <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
+                최신순 보기
+              </button>
+              <button id="addEquipBtn" onclick="location.href='add_equipment.html'">추가</button>`;
+            } else {
+              buttonDiv.innerHTML = `<button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
+              <button id="showByNameBtn" onclick="location.href='user_item_list.html'">
+                이름순 보기
+              </button>
+              <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
+                최신순 보기
+              </button>`;
+            }
+          });
       }
     </script>
   </body>

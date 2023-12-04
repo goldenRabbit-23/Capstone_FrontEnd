@@ -7,6 +7,28 @@
     <title>User: Selected Item</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #42bea5;
+      }
+      .container #logo {
+        margin-left: 30px;
+        width: 20%;
+      }
+      .container #header {
+        font-size: 5em;
+        color: #ffffff;
+        text-shadow: 0 0 0.1em, 0 0 0.3em;
+        text-align: center;
+      }
+      .container .item {
+        padding: 10px;
+      }
+      .container #margin {
+        padding: 290px;
+      }
+
       caption {
         font-size: 2.5em;
       }
@@ -87,8 +109,13 @@
     </style>
   </head>
   <body>
-    <h1>대여 신청</h1>
-    <hr />
+    <div class="container">
+      <div class="item">
+        <a href="user_dashboard.html"><img id="logo" src="logo.png" /></a>
+      </div>
+      <div class="item"><span id="header">대여 신청</span></div>
+      <div class="item"><span id="margin"></span></div>
+    </div>
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>

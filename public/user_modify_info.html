@@ -7,6 +7,28 @@
     <title>User: Modify Info</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #42bea5;
+      }
+      .container #logo {
+        margin-left: 30px;
+        width: 20%;
+      }
+      .container #header {
+        font-size: 5em;
+        color: #ffffff;
+        text-shadow: 0 0 0.1em, 0 0 0.3em;
+        text-align: center;
+      }
+      .container .item {
+        padding: 10px;
+      }
+      .container #margin {
+        padding: 290px;
+      }
+
       caption {
         font-size: 2.5em;
       }
@@ -66,8 +88,8 @@
         background-color: #ff4040;
       }
 
-      a {
-        display: block;
+      a[id='withdraw'] {
+        display: inline-block;
         width: 4em;
         margin-top: 30px;
         text-decoration: none;
@@ -75,11 +97,27 @@
         font-size: 2em;
         font-weight: 700;
       }
+
+      a[id='changePw'] {
+        display: inline-block;
+        width: 6em;
+        margin-top: 30px;
+        margin-left: 110px;
+        text-decoration: none;
+        color: blue;
+        font-size: 2em;
+        font-weight: 700;
+      }
     </style>
   </head>
   <body>
-    <h1>회원정보 수정</h1>
-    <hr />
+    <div class="container">
+      <div class="item">
+        <a id="selectLogo" href="user_dashboard.html"></a>
+      </div>
+      <div class="item"><span id="header">회원정보 수정</span></div>
+      <div class="item"><span id="margin"></span></div>
+    </div>
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
@@ -111,7 +149,7 @@
             <td></td>
           </tr>
           <tr>
-            <td>닉네임</td>
+            <td>이름</td>
             <td id="user_nickname"></td>
             <td><input type="text" id="modify_nickname" /></td>
           </tr>
@@ -131,7 +169,7 @@
         <button id="modifyBtn" onclick="modify()">수정</button>
         <button id="resetBtn" onclick="reset()">초기화</button>
       </div>
-      <a href="javascript:withdraw()">회원 탈퇴</a>
+      <div id="anchorDiv"></div>
     </div>
 
     <script>
@@ -142,6 +180,10 @@
               Authorization: `Bearer ${window.localStorage.getItem('access')}`
             }
           })
+          .then(() => {
+            loadLogo();
+            loadAccountInfo();
+          })
           .catch((error) => {
             if (error.response.status === 401) {
               if (window.localStorage.getItem('access') === null) {
@@ -151,27 +193,6 @@
                 refreshToken();
               }
             }
-          });
-
-        let user_id = document.getElementById('user_id');
-        let user_nickname = document.getElementById('user_nickname');
-        let user_phone = document.getElementById('user_phone');
-        let user_address = document.getElementById('user_address');
-
-        axios
-          .get('/api/Accounts/info/', {
-            headers: {
-              Authorization: `Bearer ${window.localStorage.getItem('access')}`
-            }
-          })
-          .then((response) => {
-            user_id.innerHTML = response.data.user;
-            user_nickname.innerHTML = response.data.name;
-            user_phone.innerHTML = response.data.phone_number;
-            user_address.innerHTML = response.data.address;
-          })
-          .catch(() => {
-            alert('해당 유저의 정보가 존재하지 않습니다.');
           });
       };
 
@@ -200,6 +221,52 @@
           window.localStorage.removeItem('refresh');
           location.href = 'login.html';
         }
+      }
+
+      function loadLogo() {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              selectLogo.innerHTML = `<img id="logo" src="logo_admin.png" />`;
+            } else {
+              selectLogo.innerHTML = `<img id="logo" src="logo.png" />`;
+            }
+          });
+      }
+
+      function loadAccountInfo() {
+        let user_id = document.getElementById('user_id');
+        let user_nickname = document.getElementById('user_nickname');
+        let user_phone = document.getElementById('user_phone');
+        let user_address = document.getElementById('user_address');
+
+        axios
+          .get('/api/Accounts/info/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            user_id.innerHTML = response.data.user;
+            user_nickname.innerHTML = response.data.name;
+            user_phone.innerHTML = response.data.phone_number;
+            user_address.innerHTML = response.data.address;
+            loadAnchors(response.data.user);
+          })
+          .catch(() => {
+            alert('해당 유저의 정보가 존재하지 않습니다.');
+          });
+      }
+
+      function loadAnchors(user_id) {
+        let anchorDiv = document.getElementById('anchorDiv');
+        anchorDiv.innerHTML = `<a id="withdraw" href="javascript:withdraw()">회원 탈퇴</a>
+        <a id="changePw" href="change_password.html?${user_id}">비밀번호 변경</a>`;
       }
 
       function modify() {

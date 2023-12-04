@@ -34,7 +34,7 @@
               alert(`${username}님 환영합니다!`);
               window.localStorage.setItem('access', response.data.access);
               window.localStorage.setItem('refresh', response.data.refresh);
-              location.href = 'user_main.html';
+              location.href = 'user_dashboard.html';
             }
           })
           .catch((error) => {

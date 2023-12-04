@@ -7,6 +7,28 @@
     <title>User: Selected Post</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #42bea5;
+      }
+      .container #logo {
+        margin-left: 30px;
+        width: 20%;
+      }
+      .container #header {
+        font-size: 5em;
+        color: #ffffff;
+        text-shadow: 0 0 0.1em, 0 0 0.3em;
+        text-align: center;
+      }
+      .container .item {
+        padding: 10px;
+      }
+      .container #margin {
+        padding: 290px;
+      }
+
       #post {
         width: 1500px;
         min-width: 1500px;
@@ -139,8 +161,13 @@
     </style>
   </head>
   <body>
-    <h1>Q&A</h1>
-    <hr />
+    <div class="container">
+      <div class="item">
+        <a id="selectLogo" href="user_dashboard.html"></a>
+      </div>
+      <div class="item"><span id="header">Q&A</span></div>
+      <div class="item"><span id="margin"></span></div>
+    </div>
     <div class="left-user-menu">
       <ul class="left-user-menu-list">
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
@@ -231,6 +258,7 @@
             }
           });
 
+        loadLogo();
         getPostInfo();
       };
 
@@ -259,6 +287,22 @@
           window.localStorage.removeItem('refresh');
           location.href = 'login.html';
         }
+      }
+
+      function loadLogo() {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              selectLogo.innerHTML = `<img id="logo" src="logo_admin.png" />`;
+            } else {
+              selectLogo.innerHTML = `<img id="logo" src="logo.png" />`;
+            }
+          });
       }
 
       function getPostInfo() {
@@ -348,6 +392,7 @@
           )
           .then(() => {
             alert('답변이 등록되었습니다.');
+            history.go(0);
           })
           .catch(() => {
             alert('답변 등록에 실패하였습니다.');
