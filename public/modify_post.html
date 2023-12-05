@@ -108,8 +108,17 @@
       <div class="item"><span id="header">Q&A</span></div>
       <div class="item"><span id="margin"></span></div>
     </div>
-    <div class="left-user-menu">
-      <ul class="left-user-menu-list">
+
+    <input type="checkbox" id="menuicon" />
+    <label for="menuicon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+    <div class="sidebar">
+      <ul>
+        <li id="menu-blank"></li>
+        <li id="menu-blank"></li>
         <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
         <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
         <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
@@ -120,6 +129,7 @@
         <li id="logout-btn" onclick="logout()">로그아웃</li>
       </ul>
     </div>
+
     <div class="main-screen">
       <table id="post">
         <caption>
