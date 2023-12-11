@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="css/user-style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User: Search Image</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+        background-color: #42bea5;
+      }
+      .container #logo {
+        margin-left: 30px;
+        width: 20%;
+      }
+      .container #header {
+        font-size: 5em;
+        color: #ffffff;
+        text-shadow: 0 0 0.1em, 0 0 0.3em;
+        text-align: center;
+      }
+      .container .item {
+        padding: 10px;
+      }
+      .container #margin {
+        padding: 290px;
+      }
+
+      #itemTable {
+        margin-top: 10px;
+      }
+
+      #itemSelection {
+        text-decoration: none;
+        color: darkgreen;
+        font-weight: 500;
+      }
+
+      #searchBtn {
+        width: 70px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #4c381e;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #searchBtn:hover {
+        background-color: #6e522c;
+      }
+
+      #searchBtn:active {
+        background-color: #916c39;
+      }
+
+      input {
+        display: inline-block;
+        margin-top: 10px;
+        margin-right: 30px;
+        width: 500px;
+        font-size: 15px;
+        color: black;
+        border: 1px solid black;
+        padding: 5px;
+        outline: none;
+      }
+
+      p {
+        font-size: 2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="item">
+        <a id="selectLogo" href="user_dashboard.html"></a>
+      </div>
+      <div class="item"><span id="header">이미지 검색</span></div>
+      <div class="item"><span id="margin"></span></div>
+    </div>
+
+    <input type="checkbox" id="menuicon" />
+    <label for="menuicon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+    <div class="sidebar">
+      <ul>
+        <li id="menu-blank"></li>
+        <li id="menu-blank"></li>
+        <li id="menu-list" onclick="location.href='user_main.html'">마이페이지</li>
+        <li id="menu-list" onclick="location.href='user_dashboard.html'">대시보드</li>
+        <li id="menu-list" onclick="location.href='user_modify_info.html'">회원정보 수정</li>
+        <li id="menu-list" onclick="location.href='user_rent.html'">대여/반납</li>
+        <li id="menu-list" onclick="location.href='user_item_list.html'">전체 기자재</li>
+        <li id="menu-list" onclick="location.href='user_favorites.html'">즐겨찾기</li>
+        <li id="menu-list" onclick="location.href='user_qa.html'">Q&A</li>
+        <li id="logout-btn" onclick="logout()">로그아웃</li>
+      </ul>
+    </div>
+
+    <div class="main-screen">
+      <p>사진을 업로드해주세요.</p>
+      <input id="uploadImage" type="file" />
+      <button id="searchBtn" type="button" onclick="search()">검색</button>
+      <table id="itemTable">
+        <thead>
+          <tr>
+            <th scope="col" width="200px">모델명</th>
+            <th scope="col" width="200px">상품명</th>
+            <th scope="col" width="150px">기종</th>
+            <th scope="col" width="150px">가격</th>
+            <th scope="col" width="150px">남은 수량</th>
+            <th scope="col" width="150px">상세 보기</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <script>
+      window.onload = () => {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              if (window.localStorage.getItem('access') === null) {
+                alert('로그인되어있지 않습니다. 로그인 해주세요.');
+                location.href = 'login.html';
+              } else {
+                refreshToken();
+              }
+            }
+          });
+
+        loadLogo();
+      };
+
+      function refreshToken() {
+        axios
+          .post('/api/Accounts/auth/refresh/', {
+            refresh: window.localStorage.getItem('refresh')
+          })
+          .then((response) => {
+            window.localStorage.setItem('access', response.data.access);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              alert('다시 로그인해주세요.');
+              window.localStorage.removeItem('access');
+              window.localStorage.removeItem('refresh');
+              location.href = 'login.html';
+            }
+          });
+      }
+
+      function logout() {
+        if (confirm('정말 로그아웃하시겠습니까?')) {
+          alert('로그아웃되었습니다.');
+          window.localStorage.removeItem('access');
+          window.localStorage.removeItem('refresh');
+          location.href = 'login.html';
+        }
+      }
+
+      function loadLogo() {
+        axios
+          .get('/api/Accounts/auth/', {
+            headers: {
+              Authorization: `Bearer ${window.localStorage.getItem('access')}`
+            }
+          })
+          .then((response) => {
+            if (response.data.user.is_staff === true) {
+              selectLogo.innerHTML = `<img id="logo" src="logo_admin.png" />`;
+            } else {
+              selectLogo.innerHTML = `<img id="logo" src="logo.png" />`;
+            }
+          });
+      }
+
+      function search() {
+        let uploadImage = document.getElementById('uploadImage');
+        let formData = new FormData();
+
+        if (uploadImage.files[0] != undefined) {
+          formData.append('img', uploadImage.files[0]);
+        }
+
+        while (document.getElementById('itemTable').rows.length > 1) {
+          document.getElementById('itemTable').deleteRow(1);
+        }
+
+        axios
+          .post('http://equip-yolo-rqnzt.run-asia-northeast1.goorm.site/infer', formData)
+          .then((response) => {
+            drawTable(response.data);
+          })
+          .catch(() => {
+            alert('해당 이미지의 기자재를 찾지 못했습니다.');
+          });
+      }
+
+      async function drawTable(model_name) {
+        let itemTable = document.getElementById('itemTable');
+
+        let itemResp = await axios.get(`/api/equip/inventory/${model_name}/`, {
+          headers: {
+            Authorization: `Bearer ${window.localStorage.getItem('access')}`
+          }
+        });
+
+        let newRow = itemTable.insertRow();
+
+        let newCell0 = newRow.insertCell(0);
+        let newCell1 = newRow.insertCell(1);
+        let newCell2 = newRow.insertCell(2);
+        let newCell3 = newRow.insertCell(3);
+        let newCell4 = newRow.insertCell(4);
+        let newCell5 = newRow.insertCell(5);
+
+        newCell0.innerHTML = model_name;
+        newCell1.innerHTML = itemResp.data.name;
+        newCell2.innerHTML = itemResp.data.type;
+        newCell3.innerHTML = itemResp.data.price;
+        newCell4.innerHTML = itemResp.data.current_stock;
+        newCell5.innerHTML = `<a id='itemSelection' href='view_selected_item.html?${model_name}'>보기</a>`;
+      }
+    </script>
+  </body>
+</html>

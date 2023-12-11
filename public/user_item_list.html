@@ -45,6 +45,26 @@
         margin-top: 10px;
       }
 
+      #searchImageBtn {
+        width: 120px;
+        height: 40px;
+        font-size: 20px;
+        background-color: #4a235a;
+        color: white;
+        border: 2px solid black;
+        border-radius: 7px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      #searchImageBtn:hover {
+        background-color: #6c3483;
+      }
+
+      #searchImageBtn:active {
+        background-color: #8e44ad;
+      }
+
       #searchBtn {
         width: 70px;
         height: 40px;
@@ -293,7 +313,8 @@
           })
           .then((response) => {
             if (response.data.user.is_staff === true) {
-              buttonDiv.innerHTML = `<button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
+              buttonDiv.innerHTML = `<button id="searchImageBtn" onclick="location.href='search_image.html'">이미지 검색</button>
+              <button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
               <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
                 최신순 보기
               </button>
@@ -302,7 +323,8 @@
               </button>
               <button id="addEquipBtn" onclick="location.href='add_equipment.html'">추가</button>`;
             } else {
-              buttonDiv.innerHTML = `<button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
+              buttonDiv.innerHTML = `<button id="searchImageBtn" onclick="location.href='search_image.html'">이미지 검색</button>
+              <button id="searchBtn" onclick="location.href='search_item.html'">검색</button>
               <button id="showByUpdatedBtn" onclick="location.href='user_item_list_byUpdate.html'">
                 최신순 보기
               </button>
